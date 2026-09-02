@@ -1,43 +1,56 @@
 # Play Presence
 
-Play Presence shows what is currently running on an Anbernic RG40XX V in Home Assistant. It detects RetroArch and native TF1 emulator sessions, cleans game titles, finds local box art, and publishes the current game and artwork through MQTT.
+Play Presence lets Home Assistant know which game is currently running on an Anbernic handheld. It works quietly in the background, detects games started through RetroArch or a native emulator, cleans up messy ROM filenames, finds matching box art, and sends the result over MQTT.
+
+The project is intended for Anbernic devices running Linux. The **RG40XX V running TF1 stock firmware is the currently verified model**.
+
+## Why use Play Presence?
+
+If you already use Home Assistant, Play Presence gives your handheld a useful live status without adding a web server or enabling remote-control features on the device.
+
+You can use it to:
+
+- Show the game that is currently running
+- Show the console or system being emulated
+- Display local box art in Home Assistant
+- Use the playing state in dashboards and automations
+- Keep the last known state available through retained MQTT messages
+
+Play Presence only observes the handheld. It does not start games, control emulators, modify ROMs, or expose an inbound network service.
 
 ## Highlights
 
-- Detects RetroArch, native `.dge` emulators, XMAME, and OpenBOR
-- Supports TF1 RetroArch playlist launches that omit the ROM from the command line
-- Publishes the current game, system, emulator, core, and box art to Home Assistant
-- Uses existing `gamelist.xml` metadata and local artwork
-- Cleans common ROM filename noise when metadata is unavailable
-- Clears stale artwork when a game has no image or the device returns to idle
-- Runs as a small, headless systemd service
-- Opens no inbound network service and never controls an emulator
-- Writes nothing to ROM storage
-- Preserves configuration and MQTT credentials during updates
-
-## Overview
-
-Play Presence is designed for the Anbernic RG40XX V running TF1 stock firmware. The daemon watches Linux process information to identify the active game without enabling RetroArch network control or exposing a web service.
-
-When a game starts, Play Presence resolves the display title and local artwork, then publishes a compact retained state and raw image data to MQTT. Home Assistant discovery creates the related entities automatically.
-
-The project is maintained at [swetoast/play_presence](https://github.com/swetoast/play_presence).
+- Detects RetroArch and native `.dge` emulator sessions
+- Supports XMAME and OpenBOR
+- Supports TF1 RetroArch playlist launches where the ROM is missing from the command line
+- Uses existing `gamelist.xml` titles and artwork
+- Cleans common region, revision, language, and dump tags from fallback titles
+- Publishes raw JPEG, PNG, or WebP artwork through MQTT
+- Clears the previous image when the current game has no artwork
+- Automatically restores the current state and artwork after reconnecting to MQTT
+- Runs as a small systemd service
+- Preserves the existing configuration and MQTT password during updates
 
 ## Requirements
 
-- Anbernic RG40XX V
-- TF1 stock firmware
+You need:
+
+- An Anbernic device running Linux
+- An MQTT broker that the handheld can reach
+- Root access to the handheld through SSH
 - Python 3.10 or later
 - Paho MQTT 1.5.x
-- Access to an MQTT broker
-- Root access on the handheld for installation and procfs inspection
-- `curl` or `wget` for the one-line installer
+- `curl` or `wget` for the simple installer
 
-The verified ROM root is:
+Verified hardware and firmware:
 
 ```text
-/mnt/mmc/Roms
+Model: RG40XX V
+Firmware: TF1 stock firmware
+ROM root: /mnt/mmc/Roms
 ```
+
+Other Linux-based Anbernic devices may work if their emulator processes and ROM layout are compatible, but they have not yet been verified.
 
 ## Installation
 
@@ -47,19 +60,29 @@ Connect to the handheld over SSH as root and run:
 curl -fsSL https://raw.githubusercontent.com/swetoast/play_presence/main/install.sh | sh
 ```
 
-If `curl` is unavailable:
+If `curl` is not available, use:
 
 ```sh
 wget -qO- https://raw.githubusercontent.com/swetoast/play_presence/main/install.sh | sh
 ```
 
-On the first installation, the script asks for the MQTT password through the terminal. Input is hidden while typing. The installer downloads into `/tmp`, validates the project layout, runs the protected Python installer, removes temporary files, prints the installed version, and shows the service status.
+During the first installation, Play Presence asks for the MQTT password in the terminal. The password is hidden while you type it.
 
-Updates use the same command. Existing configuration and MQTT credentials are preserved.
+The installer then:
+
+1. Downloads the current source into `/tmp`
+2. Checks that the expected project files are present
+3. Installs Play Presence under `/opt/play-presence`
+4. Creates the protected configuration under `/etc/play-presence`
+5. Enables and starts `play-presence.service`
+6. Removes the temporary download
+7. Prints the installed version and service status
+
+Run the same command again to update Play Presence. Existing configuration and MQTT credentials are kept during updates.
 
 ### Non-interactive first installation
 
-To provide the password from an existing protected file:
+If the MQTT password is already stored in a protected file, download the installer and pass that file explicitly:
 
 ```sh
 curl -fL -o /tmp/play-presence-install.sh \
@@ -68,52 +91,62 @@ chmod +x /tmp/play-presence-install.sh
 /tmp/play-presence-install.sh --password-file /path/to/mqtt-password
 ```
 
-## How it works
+## What appears in Home Assistant?
 
-Play Presence follows this path:
+Play Presence uses MQTT discovery to create these entities:
 
-```text
-Running emulator
-      |
-      v
-Read-only process detection
-      |
-      v
-ROM, system, emulator, and core identification
-      |
-      v
-Title and artwork resolution
-      |
-      v
-Retained MQTT state and artwork
-      |
-      v
-Home Assistant entities
+- **Current game**: the cleaned or metadata-provided game title
+- **Playing**: whether a game is currently running
+- **System**: an optional sensor for the emulated platform
+- **Current game artwork**: the matching local box art
+
+All entities are grouped under the same device in Home Assistant.
+
+A typical playing state contains information such as:
+
+```json
+{
+  "state": "playing",
+  "game": "The Legend of Zelda - The Minish Cap",
+  "system": "Game Boy Advance",
+  "system_id": "gba",
+  "emulator": "retroarch",
+  "core": "gambatte",
+  "rom_file": "Legend of Zelda, The - The Minish Cap (Europe).gba.zip",
+  "artwork_available": true,
+  "artwork_content_type": "image/jpeg"
+}
 ```
 
-### Game detection
+When no game is running, the state changes to `idle` and the previous artwork is cleared.
 
-Play Presence detects:
+## How game detection works
+
+Play Presence reads Linux process information directly from procfs. It does not use shell process tools and does not require RetroArch network control.
+
+The detector supports:
 
 - Native TF1 game `.dge` processes
-- XMAME split directory and filename arguments
+- XMAME games whose directory and filename are passed separately
 - OpenBOR
-- RetroArch games with content in the command line
-- TF1 RetroArch playlist launches through bounded read-only process-memory inspection
+- RetroArch games whose ROM path is present in the command line
+- TF1 RetroArch playlist launches that omit the ROM path from the command line
 
-`mcuCtrl.dge` and known TF1 utility processes are ignored.
+For the last case, Play Presence performs bounded, read-only inspection of the RetroArch process memory. A game is accepted only when a known libretro core and a real ROM path appear together in the same suitable memory region. This prevents old playlist or history entries from being mistaken for the active game.
 
-### Title resolution
+Known helpers and non-game utilities, including `mcuCtrl.dge`, are ignored.
 
-Titles are resolved in this order:
+## How titles are chosen
 
-1. Exact matching `<name>` in the system `gamelist.xml`
-2. Optional daemon-owned manual override
-3. Conservative filename cleanup
+Play Presence uses the following order:
 
-The fallback removes stacked ROM and archive extensions, recognized trailing region and dump metadata, repeated whitespace, and common trailing articles. Unknown title text, hacks, and collection separators remain intact.
+1. The matching `<name>` entry in the system `gamelist.xml`
+2. An optional manual title override
+3. A cleaned version of the ROM filename
 
-Example:
+The fallback cleanup removes known file extensions and common metadata from the end of a filename. It also moves trailing articles such as `, The` to the front.
+
+For example:
 
 ```text
 Legend of Zelda, The - The Minish Cap (Europe) (En,Fr,De,Es,It).gba.zip
@@ -125,41 +158,44 @@ becomes:
 The Legend of Zelda - The Minish Cap
 ```
 
-### Artwork resolution
+The cleanup is deliberately conservative. Unknown text, hack names, special editions, and collection separators are kept rather than guessed away.
 
-Play Presence checks:
+## How artwork is found
 
-1. The matching `<image>` value in `gamelist.xml`
-2. The mirrored `images/` location inside the active system folder
+Play Presence first checks the `<image>` value belonging to the exact matching game in `gamelist.xml`.
 
-Nested ROM folders are mirrored beneath `images/`.
+If that entry does not provide a usable image, Play Presence checks the system's `images` directory. Nested ROM folders are mirrored beneath `images`.
 
-Supported formats:
+Example:
+
+```text
+/mnt/mmc/Roms/SFC/Super Mario World (USA).sfc.zip
+/mnt/mmc/Roms/SFC/images/Super Mario World (USA).sfc.jpg
+```
+
+Supported artwork formats:
 
 - JPEG
 - PNG
 - WebP
 
-The daemon verifies image signatures, rejects symlinks and path escapes, and accepts only regular files inside the active system directory. The default artwork limit is 2 MiB.
+Before publishing an image, Play Presence checks that the file:
 
-Play Presence does not download, resize, convert, replace, or otherwise modify artwork.
+- Is a regular file
+- Is not a symlink
+- Stays inside the active system directory
+- Has a supported extension
+- Has a matching image signature
+- Is not empty
+- Is no larger than the configured limit
 
-## Home Assistant
+The default artwork limit is 2 MiB.
 
-Play Presence publishes Home Assistant discovery for:
-
-- Current game
-- Playing status
-- Optional system sensor
-- Current game artwork
-
-All entities share the same RG40XX V device identity.
-
-The artwork entity receives raw image bytes over MQTT. Images are not Base64 encoded. When a game has no valid artwork, or the device returns to idle, Play Presence publishes an empty retained artwork payload so the previous image is not left behind.
+Play Presence never downloads, converts, resizes, replaces, or writes artwork.
 
 ## MQTT topics
 
-Default topics:
+The default topics are:
 
 ```text
 rg40xxv/availability
@@ -167,39 +203,41 @@ rg40xxv/state
 rg40xxv/artwork
 ```
 
-State and artwork use retained QoS 1 publication. Only the current state and current artwork are retained by the application. Obsolete game transitions are not queued during an outage.
+The state topic contains JSON. The artwork topic contains the raw image bytes, without Base64 encoding or a JSON wrapper.
+
+State and artwork are published with QoS 1 and retained messages. During an outage, Play Presence keeps only the latest state and latest artwork. It does not queue a history of game changes.
 
 ## Configuration
 
-Installed configuration:
+The installed configuration is stored at:
 
 ```text
 /etc/play-presence/config.json
 ```
 
-Installed MQTT password:
+The MQTT password is stored separately at:
 
 ```text
 /etc/play-presence/mqtt-password
 ```
 
-Example configuration is included at:
+An example configuration is included in the repository:
 
 ```text
 config/config.example.json
 ```
 
-Validate the installed configuration with:
+Check the installed configuration with:
 
 ```sh
 PYTHONPATH=/opt/play-presence/src \
-/usr/bin/python3 -m play_presence check-config \
+python3 -m play_presence check-config \
   --config /etc/play-presence/config.json
 ```
 
 ## Service management
 
-Play Presence runs through the existing compatibility-safe service name:
+Play Presence runs as:
 
 ```text
 play-presence.service
@@ -214,34 +252,36 @@ systemctl stop play-presence.service
 journalctl -u play-presence.service -b
 ```
 
-Installed application files:
+Application files are installed under:
 
 ```text
-/opt/play-presence/
+/opt/play-presence
 ```
 
-Runtime failure evidence, when needed, is stored only in volatile storage:
+Temporary runtime evidence is stored under:
 
 ```text
-/run/play-presence/
+/run/play-presence
 ```
 
-## Security and resource limits
+## Security and resource use
 
-Play Presence:
+Play Presence is intentionally small and passive.
+
+It:
 
 - Opens no listening port
 - Accepts no inbound commands
-- Does not enable RetroArch network control
-- Reads emulator and ROM information without controlling either
-- Keeps MQTT credentials outside command-line arguments
+- Does not control RetroArch or another emulator
+- Does not execute ROM-derived text
+- Keeps MQTT credentials out of command-line arguments
 - Mounts ROM storage read-only inside the systemd service
 - Writes no routine state to ROM directories
-- Keeps only the latest state and artwork in memory
+- Keeps only the current state and current artwork in memory
 - Limits artwork to 2 MiB by default
-- Uses bounded reconnect, retry, journal, validation, and process-memory behavior
+- Uses bounded reconnect, retry, logging, and process-memory behavior
 
-Project resource targets:
+The project targets:
 
 ```text
 Preferred RSS: 30 MiB or less
@@ -251,22 +291,47 @@ Routine process write growth: none
 Long-run memory growth: none
 ```
 
-## Validation
+## Troubleshooting
 
-Run the automated suite from the project root:
+### The service does not start
+
+Check the service status:
+
+```sh
+systemctl status play-presence.service
+```
+
+Then validate the configuration:
+
+```sh
+PYTHONPATH=/opt/play-presence/src \
+python3 -m play_presence check-config \
+  --config /etc/play-presence/config.json
+```
+
+### Home Assistant shows old artwork
+
+Start a game without artwork or return to the TF1 menu. Play Presence should publish an empty retained artwork message and clear the previous image.
+
+If the image remains, check that the service is connected to MQTT and that Home Assistant received the `rg40xxv/artwork` update.
+
+### A game has no artwork
+
+Check the matching `<image>` value in the system `gamelist.xml` or place the image in the corresponding system `images` folder. The image filename must match the expected ROM-relative artwork name.
+
+### A fallback title still contains extra text
+
+Play Presence removes only metadata patterns it recognizes. This is intentional. It is safer to leave unfamiliar text in place than to remove part of a real game title.
+
+## Development and validation
+
+Run the automated test suite from the repository root:
 
 ```sh
 PYTHONDONTWRITEBYTECODE=1 python3 -m pytest -q
 ```
 
-Compile the source and tests:
-
-```sh
-PYTHONDONTWRITEBYTECODE=1 \
-python3 -m compileall -q src tests deploy/install.py
-```
-
-Check the source version:
+Check the installed or source version:
 
 ```sh
 PYTHONPATH=src PYTHONDONTWRITEBYTECODE=1 \
@@ -277,45 +342,24 @@ Collect a bounded device snapshot:
 
 ```sh
 PYTHONPATH=/opt/play-presence/src \
-sudo -E /usr/bin/python3 -m play_presence validate
+sudo -E python3 -m play_presence validate
 ```
 
-Detailed project records are available in:
+More detailed project information is available in:
 
 - [`docs/DESIGN.md`](docs/DESIGN.md)
 - [`docs/ROADMAP.md`](docs/ROADMAP.md)
 - [`docs/VALIDATION.md`](docs/VALIDATION.md)
 - [`CHANGELOG.md`](CHANGELOG.md)
 
-## Troubleshooting
-
-### The service does not start
-
-Check the service and configuration:
-
-```sh
-systemctl status play-presence.service
-PYTHONPATH=/opt/play-presence/src \
-python3 -m play_presence check-config \
-  --config /etc/play-presence/config.json
-```
-
-### Home Assistant shows the wrong or stale artwork
-
-Confirm that the active game has a valid image referenced by `gamelist.xml` or stored under the system `images/` folder. Returning to idle or starting a game without artwork should clear the retained image.
-
-### The game title still contains filename metadata
-
-A matching `gamelist.xml` name takes priority. Without metadata, Play Presence applies conservative cleanup and intentionally preserves unfamiliar text rather than guessing a different title.
-
 ## Contributing and feedback
 
-Bug reports, feature requests, documentation corrections, and tested emulator observations are welcome through [GitHub Issues](https://github.com/swetoast/play_presence/issues).
+Bug reports, feature requests, documentation corrections, and verified emulator observations are welcome through [GitHub Issues](https://github.com/swetoast/play_presence/issues).
 
-Please include the Play Presence version, TF1 environment details, relevant emulator, and reproducible observations. Never include MQTT passwords or other credentials.
+When reporting a problem, include the Play Presence version, Anbernic model, Linux firmware, emulator, and steps needed to reproduce the issue. Do not include MQTT passwords or other credentials.
 
 ## Project status
 
-Version 0.6.8 includes automated coverage for detection, configuration, state transitions, MQTT recovery, Home Assistant discovery, title cleanup, artwork validation, installation, and bounded validation collection.
+The RG40XX V running TF1 stock firmware is the verified reference device. Support for other Linux-based Anbernic devices depends on their emulator process layout, ROM paths, and power interfaces.
 
-Remaining work is tracked in [`docs/ROADMAP.md`](docs/ROADMAP.md), including targeted TF1 hardware evidence for artwork rendering, missing-artwork clearing, representative artwork memory usage, outage recovery, and remaining Phase 5 acceptance items.
+Current development and remaining hardware validation are tracked in [`docs/ROADMAP.md`](docs/ROADMAP.md).
