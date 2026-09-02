@@ -1,0 +1,34 @@
+{
+  "mqtt": {
+    "host": "10.0.0.5",
+    "port": 1883,
+    "username": "rg40xxv",
+    "password_file": "/etc/rg40xx-game-presence/mqtt-password",
+    "client_id": "rg40xxv-game-presence",
+    "topic_prefix": "rg40xxv",
+    "keepalive_seconds": 60
+  },
+  "detection": {
+    "rom_roots": [
+      "/mnt/mmc/Roms"
+    ],
+    "retroarch_executable": "/mnt/vendor/deep/retro/retroarch",
+    "power_online_path": "/sys/class/power_supply/axp2202-usb/online",
+    "playing_poll_seconds": 5,
+    "idle_usb_poll_seconds": 5,
+    "idle_battery_poll_seconds": 10,
+    "unknown_power_poll_seconds": 5,
+    "system_aliases": {}
+  },
+  "home_assistant": {
+    "enabled": true,
+    "include_system_sensor": false,
+    "discovery_prefix": "homeassistant"
+  },
+  "metadata": {
+    "gamelist_filename": "gamelist.xml",
+    "overrides_file": "",
+    "overrides_max_bytes": 1048576,
+    "artwork_max_bytes": 2097152
+  }
+}
