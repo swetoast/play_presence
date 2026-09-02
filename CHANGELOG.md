@@ -1,13 +1,5 @@
 # Changelog
 
-## 0.6.9 - 2026-09-02
-
-### Changed
-- Locked MQTT state serialization to the approved game-focused field set.
-- Prevented future internal dataclass fields from being published automatically.
-- Added regression coverage that rejects version, detector, filesystem-path, source, battery, CPU, and memory fields from the normal MQTT state.
-- Updated the README with the exact MQTT state contract in natural language.
-
 ## 0.6.8 - 2026-09-02
 
 ### Added

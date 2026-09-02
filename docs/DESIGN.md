@@ -1,7 +1,7 @@
 # Play Presence design
 
 - Design version: 0.8
-- Project implementation version: 0.6.9
+- Project implementation version: 0.6.8
 - Status: Approved 0.7 baseline with explicit bounded artwork revision
 - Target: Anbernic RG40XX V
 - Firmware: TF1 stock firmware
@@ -169,6 +169,6 @@ The 0.6.8 work is an explicit revision inside Phase 5, not a new phase.
 
 ## Distribution and naming
 
-The project and installed software identifiers are **Play Presence**. Version 0.6.9 uses the `play_presence` Python package, `play-presence` command, `/opt/play-presence`, `/etc/play-presence`, `/run/play-presence`, and `play-presence.service`. The installer migrates configuration and credentials from the previous installation names and retires the previous service only after the new installation succeeds. MQTT topics and Home Assistant unique IDs remain stable to avoid duplicate entities.
+The project and installed software identifiers are **Play Presence**. Version 0.6.8 uses the `play_presence` Python package, `play-presence` command, `/opt/play-presence`, `/etc/play-presence`, `/run/play-presence`, and `play-presence.service`. The installer migrates configuration and credentials from the previous installation names and retires the previous service only after the new installation succeeds. MQTT topics and Home Assistant unique IDs remain stable to avoid duplicate entities.
 
 The repository bootstrap `install.sh` performs no direct installation logic. It requires root, downloads the configured GitHub branch into volatile `/tmp`, validates the expected project files, invokes the existing Python installer, and removes temporary files. Configuration preservation, credential handling, staged replacement, rollback, systemd enablement, and service startup remain owned by `deploy/install.py`.

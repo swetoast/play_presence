@@ -20,7 +20,7 @@ class C:
 def setup(tmp_path):
  p=tmp_path/'pw';p.write_text('x');cfg=MqttConfig(password_file=p);c=C();m=MqttPresence(cfg,lambda **kw:c,lambda:discovery_records(cfg,DiscoveryConfig()));m.client.on_connect(c,None,{},0);return m,c,cfg
 def test_discovery_image_entity(tmp_path):
- m,c,cfg=setup(tmp_path); payloads=[a for a,k in c.calls if a[0].endswith('/image/rg40xxv_artwork/config')]; assert payloads; assert json.loads(payloads[-1][1])['image_topic']==cfg.artwork_topic
+ m,c,cfg=setup(tmp_path); payloads=[a for a,k in c.calls if a[0].endswith('/image/play_presence_current_game_artwork/config')]; assert payloads; assert json.loads(payloads[-1][1])['image_topic']==cfg.artwork_topic
 def test_binary_artwork_and_idle_tombstone(tmp_path):
  m,c,cfg=setup(tmp_path);playing=PublicState('playing','Game','GBA','gba','retroarch',None,'Game.zip',None,True,'image/jpeg');assert m.update(playing,b'JPEG');assert any(a[0]==cfg.artwork_topic and a[1]==b'JPEG' for a,k in c.calls);idle=PublicState('idle',None,None,None,None,None,None,None);assert m.update(idle,b'');assert any(a[0]==cfg.artwork_topic and a[1]==b'' for a,k in c.calls)
 def test_reconnect_republishes_artwork(tmp_path):
