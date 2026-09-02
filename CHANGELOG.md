@@ -1,10 +1,24 @@
 # Changelog
 
+## 0.6.9 - 2026-09-02
+
+### Changed
+- Renamed the Home Assistant device and discovery entities to Play Presence.
+- Added the default entity IDs `sensor.play_presence_current_game`, `binary_sensor.play_presence_playing`, `sensor.play_presence_system`, and `image.play_presence_current_game_artwork`.
+- Added retained discovery tombstones for the previous `rg40xxv_*` entities so Home Assistant can remove the old registrations during migration.
+- Locked MQTT state serialization to the approved game-focused fields.
+- Prevented internal diagnostic fields from being added to the normal MQTT state automatically.
+- Updated and simplified the README with neutral examples, natural language, and a DRY structure.
+
+### Validation
+- Added regression coverage for the new Home Assistant device identity, entity IDs, legacy discovery cleanup, and exact MQTT state contract.
+- Verified the complete automated test suite, source compilation, reported version, and release archive integrity.
+
 ## 0.6.8 - 2026-09-02
 
 ### Added
-- Conservative cleanup for device ROM filename patterns, including stacked ROM/archive extensions, recognized trailing dump metadata, whitespace normalization, and trailing articles.
-- Exact matching `gamelist.xml` `<image>` resolution and nested mirrored `images/` fallback.
+- Conservative cleanup for device ROM filename patterns, including stacked ROM and archive extensions, recognized trailing dump metadata, whitespace normalization, and trailing articles.
+- Exact matching `gamelist.xml` `<image>` resolution and nested mirrored `images` fallback.
 - Retained binary MQTT artwork publication and Home Assistant MQTT image discovery.
 - Empty retained artwork on idle or missing artwork.
 - Independent latest-state and latest-artwork retry after transient publication rejection.
@@ -18,13 +32,13 @@
 
 ### Compatibility
 - Preserved verified 0.6.7 aliases, strict configuration validation, DGE detection, XMAME reconstruction, OpenBOR support, RetroArch command-line detection, and playlist-memory detection.
-- Preserved the public compatibility helpers and restored the complete phase regression modules.
+- Preserved public compatibility helpers and restored the complete phase regression modules.
 
 ### Packaging
-- Clarified platform scope in the README: Anbernic devices running Linux, with RG40XX V as the currently verified model.
-- Reworked README as a concise user-facing project introduction with highlights, one-line installation, usage, architecture, security, troubleshooting, documentation links, and contribution guidance. No emoji are used.
-- Added a root-only GitHub bootstrap installer with curl/wget fallback, temporary extraction, source validation, secure first-install MQTT password prompt, cleanup, version output, and service-status output.
-- Completed the Play Presence rename for the package, command, installation paths, runtime path, and systemd unit. Added migration from previous installed paths and service names while preserving MQTT topics and Home Assistant unique IDs.
+- Clarified platform scope as Anbernic devices running Linux, with RG40XX V as the currently verified model.
+- Added a root-only GitHub bootstrap installer with `curl` and `wget` support, temporary extraction, source validation, secure first-install MQTT password input, cleanup, version output, and service-status output.
+- Completed the Play Presence rename for the package, command, installation paths, runtime path, and systemd unit.
+- Added migration from previous installed paths and service names while preserving MQTT state and artwork topics.
 - Excluded bytecode, pytest caches, and development filename inventories.
 - Updated design, roadmap, validation, README, tests, and package version.
 
@@ -56,7 +70,7 @@
 ## 0.6.4 - 2026-09-01
 
 ### Added
-- Validation continuity, PID/restart evidence, valid-sample counts, completeness, and interruption reasons.
+- Validation continuity, PID and restart evidence, valid-sample counts, completeness, and interruption reasons.
 - Complete unknown-key rejection.
 - MQTT recovery result checking.
 - Installer restoration of previous systemd active and enabled state.
@@ -73,7 +87,7 @@
 - Verified TF1 game-runtime `.dge` classification.
 - OpenBOR exception.
 - Friendly emulator names and generic future-runtime fallback.
-- Expanded system aliases and utility/helper rejection.
+- Expanded system aliases and utility or helper rejection.
 
 ## 0.6.1 - 2026-09-01
 
