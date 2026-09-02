@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from rg40xx_game_presence import platform_probe as probe
+from play_presence import platform_probe as probe
 
 
 def test_timed_text_read_accepts_zero_and_one(tmp_path: Path) -> None:
@@ -151,7 +151,7 @@ def test_prepare_writes_bounded_state(tmp_path: Path, monkeypatch: pytest.Monkey
 
 
 def test_cli_version() -> None:
-    from rg40xx_game_presence.__main__ import build_parser
+    from play_presence.__main__ import build_parser
 
     parser = build_parser()
     args = parser.parse_args(["probe", "verify", "--output", "/tmp/out.json"])
@@ -166,7 +166,7 @@ def test_mqtt_broker_probe_is_optional() -> None:
 
 
 def test_validate_cli_arguments() -> None:
-    from rg40xx_game_presence.__main__ import build_parser
+    from play_presence.__main__ import build_parser
 
     args = build_parser().parse_args(["validate", "--duration", "3600", "--interval", "60", "--output", "/tmp/result.json"])
     assert args.command == "validate"

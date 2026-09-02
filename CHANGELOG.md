@@ -23,7 +23,7 @@
 ### Packaging
 - Reworked README as a concise user-facing project introduction with highlights, one-line installation, usage, architecture, security, troubleshooting, documentation links, and contribution guidance. No emoji are used.
 - Added a root-only GitHub bootstrap installer with curl/wget fallback, temporary extraction, source validation, secure first-install MQTT password prompt, cleanup, version output, and service-status output.
-- Adopted the visible project name Play Presence while preserving installed paths, package names, service identifiers, MQTT topics, and Home Assistant unique IDs.
+- Completed the Play Presence rename for the package, command, installation paths, runtime path, and systemd unit. Added migration from previous installed paths and service names while preserving MQTT topics and Home Assistant unique IDs.
 - Excluded bytecode, pytest caches, and development filename inventories.
 - Updated design, roadmap, validation, README, tests, and package version.
 
@@ -48,7 +48,7 @@
 ## 0.6.5 - 2026-09-01
 
 ### Added
-- Bounded volatile fatal-error evidence under `/run/rg40xx-game-presence/last-failure.json`.
+- Bounded volatile fatal-error evidence under `/run/play-presence/last-failure.json`.
 - Lifecycle phase labels and same-boot validation inclusion.
 - Secret-safe failure records containing no messages, credentials, paths, arguments, or tracebacks.
 

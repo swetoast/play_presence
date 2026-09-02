@@ -41,13 +41,14 @@ PROJECT=$(find "$SOURCE" -mindepth 1 -maxdepth 1 -type d | head -n 1)
 [ -f "$PROJECT/pyproject.toml" ] || fail "pyproject.toml is missing from the repository"
 
 set -- "$@"
-PASSWORD_FILE="/etc/rg40xx-game-presence/mqtt-password"
+PASSWORD_FILE="/etc/play-presence/mqtt-password"
+LEGACY_PASSWORD_FILE="/etc/rg40xx-game-presence/mqtt-password"
 HAS_PASSWORD_ARGUMENT=0
 for argument in "$@"; do
     [ "$argument" = "--password-file" ] && HAS_PASSWORD_ARGUMENT=1
 done
 
-if [ ! -s "$PASSWORD_FILE" ] && [ "$HAS_PASSWORD_ARGUMENT" -eq 0 ]; then
+if [ ! -s "$PASSWORD_FILE" ] && [ ! -s "$LEGACY_PASSWORD_FILE" ] && [ "$HAS_PASSWORD_ARGUMENT" -eq 0 ]; then
     [ -r /dev/tty ] || fail "first installation needs --password-file"
     TEMP_PASSWORD="$WORK/mqtt-password"
     printf 'MQTT password: ' > /dev/tty
@@ -67,5 +68,5 @@ cd "$PROJECT"
 python3 deploy/install.py "$@"
 
 printf 'Play Presence installation complete.\n'
-PYTHONPATH=/opt/rg40xx-game-presence/src python3 -m rg40xx_game_presence --version
-systemctl --no-pager --full status rg40xx-game-presence.service 2>/dev/null | sed -n '1,8p' || true
+PYTHONPATH=/opt/play-presence/src python3 -m play_presence --version
+systemctl --no-pager --full status play-presence.service 2>/dev/null | sed -n '1,8p' || true

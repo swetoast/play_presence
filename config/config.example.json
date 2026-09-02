@@ -3,7 +3,7 @@
     "host": "10.0.0.5",
     "port": 1883,
     "username": "rg40xxv",
-    "password_file": "/etc/rg40xx-game-presence/mqtt-password",
+    "password_file": "/etc/play-presence/mqtt-password",
     "client_id": "rg40xxv-game-presence",
     "topic_prefix": "rg40xxv",
     "keepalive_seconds": 60

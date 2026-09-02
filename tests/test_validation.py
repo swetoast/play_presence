@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from rg40xx_game_presence import validation
+from play_presence import validation
 
 
 def test_integer_file_reads_status_key(tmp_path: Path) -> None:

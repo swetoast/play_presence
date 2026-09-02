@@ -23,10 +23,10 @@ def test_bootstrap_uses_expected_repository_and_volatile_workspace():
  assert 'first installation needs --password-file' in text
 
 def test_compatibility_sensitive_identifiers_remain_unchanged():
- assert (ROOT/'src/rg40xx_game_presence').is_dir()
- unit=(ROOT/'deploy/rg40xx-game-presence.service').read_text()
- assert 'rg40xx_game_presence' in unit
- assert '/opt/rg40xx-game-presence' in unit
- config=(ROOT/'src/rg40xx_game_presence/config.py').read_text()
+ assert (ROOT/'src/play_presence').is_dir()
+ unit=(ROOT/'deploy/play-presence.service').read_text()
+ assert 'play_presence' in unit
+ assert '/opt/play-presence' in unit
+ config=(ROOT/'src/play_presence/config.py').read_text()
  assert "f'{self.topic_prefix}/state'" in config
  assert "f'{self.topic_prefix}/artwork'" in config

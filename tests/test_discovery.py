@@ -1,6 +1,6 @@
 import json
-from rg40xx_game_presence.config import DiscoveryConfig,MqttConfig
-from rg40xx_game_presence.discovery import discovery_records
+from play_presence.config import DiscoveryConfig,MqttConfig
+from play_presence.discovery import discovery_records
 
 def records(system=False,enabled=True):return discovery_records(MqttConfig(topic_prefix='handheld'),DiscoveryConfig(enabled=enabled,include_system_sensor=system))
 def payloads(system=False):return {t:(json.loads(p) if p else None) for t,p in records(system)}

@@ -155,7 +155,7 @@
 - [x] P5-CORR-048 Clean package without caches, bytecode, or development inventories
 - [x] P5-CORR-049 Restored phase regression modules and compatibility helper contracts
 - [x] P5-CORR-050 Add a simple validated GitHub bootstrap installer while preserving the existing safe Python installer
-- [x] P5-CORR-051 Adopt Play Presence branding without changing compatibility-sensitive identifiers
+- [x] P5-CORR-051 Complete the Play Presence package, command, path, runtime, and service rename with migration from previous installation names
 - [ ] P5-HW-ART-001 Verify title and artwork on TF1 with a valid local image
 - [ ] P5-HW-ART-002 Verify missing artwork clears stale Home Assistant artwork
 - [ ] P5-HW-ART-003 Record one short RSS snapshot with representative artwork loaded

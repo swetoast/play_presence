@@ -1,6 +1,6 @@
 from pathlib import Path
-from rg40xx_game_presence.daemon import SessionTracker,local_state_json
-from rg40xx_game_presence.detection import SessionCandidate
+from play_presence.daemon import SessionTracker,local_state_json
+from play_presence.detection import SessionCandidate
 
 def item(pid,ticks,name):
  p=f'/mnt/mmc/Roms/GBA/{name}.zip';return SessionCandidate(pid,ticks,'/tmp/gba.dge',p,'/mnt/mmc/Roms','GBA','gba','Game Boy Advance','gba',None,Path(p).name,None)
@@ -12,15 +12,15 @@ def test_same_identity_and_json_safe():
  t=SessionTracker();a=item(1,100,'Game');t.update(a);state,changed=t.update(a);assert not changed and 'Game.zip' in local_state_json(state)
 def test_detector_emits_initial_idle(monkeypatch):
  import threading
- from rg40xx_game_presence import daemon
- from rg40xx_game_presence.config import DetectionConfig
+ from play_presence import daemon
+ from play_presence.config import DetectionConfig
  stop=threading.Event();seen=[];monkeypatch.setattr(daemon,'scan_candidates',lambda c:[]);monkeypatch.setattr(daemon,'next_interval',lambda c,p:5)
  def get(s):seen.append(s);stop.set()
  daemon.run_local_detector(DetectionConfig(),stop,get);assert len(seen)==1 and seen[0].state=='idle'
 def test_title_resolved_only_on_identity_change(monkeypatch):
  import threading
- from rg40xx_game_presence import daemon
- from rg40xx_game_presence.config import DetectionConfig
+ from play_presence import daemon
+ from play_presence.config import DetectionConfig
  first=item(1,100,'First');scans=iter([[first],[first],[],[]]);stop=threading.Event();resolved=[];seen=[]
  monkeypatch.setattr(daemon,'scan_candidates',lambda c:next(scans));monkeypatch.setattr(daemon,'select_candidate',lambda cs,current:cs[0] if cs else None);monkeypatch.setattr(daemon,'next_interval',lambda c,p:0)
  def recv(s):seen.append(s);stop.set() if s.state=='idle' else None
@@ -28,8 +28,8 @@ def test_title_resolved_only_on_identity_change(monkeypatch):
  assert resolved==[first.identity] and seen[0].game=='Resolved' and seen[-1].state=='idle'
 def test_poll_callback_runs_without_visible_change(monkeypatch):
  import threading
- from rg40xx_game_presence import daemon
- from rg40xx_game_presence.config import DetectionConfig
+ from play_presence import daemon
+ from play_presence.config import DetectionConfig
  first=item(1,100,'First');scans=iter([[first],[first]]);stop=threading.Event();poll=[];seen=[]
  monkeypatch.setattr(daemon,'scan_candidates',lambda c:next(scans));monkeypatch.setattr(daemon,'select_candidate',lambda cs,current:cs[0]);monkeypatch.setattr(daemon,'next_interval',lambda c,p:0)
  def recv(s):seen.append(s)

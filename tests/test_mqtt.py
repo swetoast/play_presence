@@ -1,10 +1,10 @@
 import json
 from pathlib import Path
 import pytest
-from rg40xx_game_presence.config import ConfigError,MqttConfig
-from rg40xx_game_presence.daemon import LocalState
-from rg40xx_game_presence.detection import SessionCandidate
-from rg40xx_game_presence.mqtt import ErrorLimiter,MqttPresence,PublicState,public_state_from_local
+from play_presence.config import ConfigError,MqttConfig
+from play_presence.daemon import LocalState
+from play_presence.detection import SessionCandidate
+from play_presence.mqtt import ErrorLimiter,MqttPresence,PublicState,public_state_from_local
 class Result:
  def __init__(self,rc=0,published=True):self.rc=rc;self.published=published
  def is_published(self):return self.published

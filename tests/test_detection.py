@@ -5,8 +5,8 @@ from pathlib import Path
 
 import pytest
 
-from rg40xx_game_presence.config import DetectionConfig, PollConfig
-from rg40xx_game_presence.detection import (
+from play_presence.config import DetectionConfig, PollConfig
+from play_presence.detection import (
     PowerMode,
     ProcessRecord,
     SessionCandidate,
@@ -169,7 +169,7 @@ def _write_sparse_memory(path: Path, offset: int, payload: bytes) -> None:
 
 
 def test_playlist_retroarch_memory_detection_prefers_live_same_core_cluster(tmp_path: Path) -> None:
-    from rg40xx_game_presence import detection
+    from play_presence import detection
     proc = tmp_path / "proc"
     base = proc / "10"
     base.mkdir(parents=True)

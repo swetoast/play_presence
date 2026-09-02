@@ -1,8 +1,8 @@
 import json
 from pathlib import Path
-from rg40xx_game_presence.config import MqttConfig,DiscoveryConfig
-from rg40xx_game_presence.discovery import discovery_records
-from rg40xx_game_presence.mqtt import MqttPresence,PublicState
+from play_presence.config import MqttConfig,DiscoveryConfig
+from play_presence.discovery import discovery_records
+from play_presence.mqtt import MqttPresence,PublicState
 class R:
  rc=0
  def is_published(self):return True

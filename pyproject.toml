@@ -2,14 +2,14 @@
 requires = ["setuptools>=61"]
 build-backend = "setuptools.build_meta"
 [project]
-name = "rg40xx-game-presence"
+name = "play-presence"
 version = "0.6.8"
 description = "Play Presence for RG40XX V with MQTT and Home Assistant"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = ["paho-mqtt>=1.5.1,<2"]
 [project.scripts]
-rg40xx-game-presence = "rg40xx_game_presence.__main__:main"
+play-presence = "play_presence.__main__:main"
 [tool.setuptools]
 package-dir = {"" = "src"}
 [tool.setuptools.packages.find]

@@ -1,6 +1,6 @@
 import json
 import pytest
-from rg40xx_game_presence.config import ConfigError, load_config
+from play_presence.config import ConfigError, load_config
 
 def write(tmp_path,value):
  p=tmp_path/'config.json';p.write_text(json.dumps(value));return p

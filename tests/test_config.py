@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 import pytest
-from rg40xx_game_presence.config import ConfigError, load_config
+from play_presence.config import ConfigError, load_config
 
 def write_config(tmp_path: Path, value: object) -> Path:
     path=tmp_path/'config.json';path.write_text(json.dumps(value),encoding='utf-8');return path

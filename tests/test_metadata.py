@@ -1,9 +1,9 @@
 import json
 from pathlib import Path
 import pytest
-from rg40xx_game_presence.config import MetadataConfig
-from rg40xx_game_presence.detection import SessionCandidate
-from rg40xx_game_presence.metadata import MetadataError,TitleResolver,conservative_title,load_overrides,metadata_location,stream_gamelist_title
+from play_presence.config import MetadataConfig
+from play_presence.detection import SessionCandidate
+from play_presence.metadata import MetadataError,TitleResolver,conservative_title,load_overrides,metadata_location,stream_gamelist_title
 
 def candidate(root,system,relative):
  rom=root/system/relative;return SessionCandidate(1,100,'/tmp/emulator.dge',str(rom),str(root),system,'mame' if system=='MAME' else 'n64','Arcade' if system=='MAME' else 'Nintendo 64','xmame' if system=='MAME' else 'retroarch',None,rom.name,None)

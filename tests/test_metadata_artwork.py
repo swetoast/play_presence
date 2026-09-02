@@ -1,7 +1,7 @@
 from pathlib import Path
-from rg40xx_game_presence.config import MetadataConfig
-from rg40xx_game_presence.detection import SessionCandidate
-from rg40xx_game_presence.metadata import TitleResolver,conservative_title
+from play_presence.config import MetadataConfig
+from play_presence.detection import SessionCandidate
+from play_presence.metadata import TitleResolver,conservative_title
 
 def item(root,relative):
  p=root/'GBA'/relative
@@ -34,7 +34,7 @@ def test_default_artwork_limit_is_two_mib():
  assert MetadataConfig().artwork_max_bytes == 2 * 1024 * 1024
 
 def test_verified_aliases_are_preserved():
- from rg40xx_game_presence.config import DEFAULT_ALIASES
+ from play_presence.config import DEFAULT_ALIASES
  assert DEFAULT_ALIASES['Nintendo - Nintendo 64'][0]=='n64'
  assert DEFAULT_ALIASES['Nintendo - Gameboy Advance'][0]=='gba'
  assert DEFAULT_ALIASES['Nintendo - Super Nintendo Entertainment System'][0]=='snes'

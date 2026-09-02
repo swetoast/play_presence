@@ -174,13 +174,13 @@ State and artwork use retained QoS 1 publication. Only the current state and cur
 Installed configuration:
 
 ```text
-/etc/rg40xx-game-presence/config.json
+/etc/play-presence/config.json
 ```
 
 Installed MQTT password:
 
 ```text
-/etc/rg40xx-game-presence/mqtt-password
+/etc/play-presence/mqtt-password
 ```
 
 Example configuration is included at:
@@ -192,9 +192,9 @@ config/config.example.json
 Validate the installed configuration with:
 
 ```sh
-PYTHONPATH=/opt/rg40xx-game-presence/src \
-/usr/bin/python3 -m rg40xx_game_presence check-config \
-  --config /etc/rg40xx-game-presence/config.json
+PYTHONPATH=/opt/play-presence/src \
+/usr/bin/python3 -m play_presence check-config \
+  --config /etc/play-presence/config.json
 ```
 
 ## Service management
@@ -202,28 +202,28 @@ PYTHONPATH=/opt/rg40xx-game-presence/src \
 Play Presence runs through the existing compatibility-safe service name:
 
 ```text
-rg40xx-game-presence.service
+play-presence.service
 ```
 
 Useful commands:
 
 ```sh
-systemctl status rg40xx-game-presence.service
-systemctl restart rg40xx-game-presence.service
-systemctl stop rg40xx-game-presence.service
-journalctl -u rg40xx-game-presence.service -b
+systemctl status play-presence.service
+systemctl restart play-presence.service
+systemctl stop play-presence.service
+journalctl -u play-presence.service -b
 ```
 
 Installed application files:
 
 ```text
-/opt/rg40xx-game-presence/
+/opt/play-presence/
 ```
 
 Runtime failure evidence, when needed, is stored only in volatile storage:
 
 ```text
-/run/rg40xx-game-presence/
+/run/play-presence/
 ```
 
 ## Security and resource limits
@@ -270,14 +270,14 @@ Check the source version:
 
 ```sh
 PYTHONPATH=src PYTHONDONTWRITEBYTECODE=1 \
-python3 -m rg40xx_game_presence --version
+python3 -m play_presence --version
 ```
 
 Collect a bounded device snapshot:
 
 ```sh
-PYTHONPATH=/opt/rg40xx-game-presence/src \
-sudo -E /usr/bin/python3 -m rg40xx_game_presence validate
+PYTHONPATH=/opt/play-presence/src \
+sudo -E /usr/bin/python3 -m play_presence validate
 ```
 
 Detailed project records are available in:
@@ -294,10 +294,10 @@ Detailed project records are available in:
 Check the service and configuration:
 
 ```sh
-systemctl status rg40xx-game-presence.service
-PYTHONPATH=/opt/rg40xx-game-presence/src \
-python3 -m rg40xx_game_presence check-config \
-  --config /etc/rg40xx-game-presence/config.json
+systemctl status play-presence.service
+PYTHONPATH=/opt/play-presence/src \
+python3 -m play_presence check-config \
+  --config /etc/play-presence/config.json
 ```
 
 ### Home Assistant shows the wrong or stale artwork

@@ -13,13 +13,13 @@ SPEC.loader.exec_module(installer)
 
 
 def test_service_unit_has_bounded_restart_and_verified_paths() -> None:
-    unit = (ROOT / "deploy/rg40xx-game-presence.service").read_text(encoding="utf-8")
+    unit = (ROOT / "deploy/play-presence.service").read_text(encoding="utf-8")
     assert "RestartSec=60" in unit
     assert "StartLimitBurst=3" in unit
-    assert "ExecStartPre=/usr/bin/python3 -m rg40xx_game_presence check-config" in unit
-    assert "ExecStart=/usr/bin/python3 -m rg40xx_game_presence run" in unit
-    assert "RuntimeDirectory=rg40xx-game-presence" in unit
-    assert "ReadOnlyPaths=/opt/rg40xx-game-presence /mnt/mmc/Roms" in unit
+    assert "ExecStartPre=/usr/bin/python3 -m play_presence check-config" in unit
+    assert "ExecStart=/usr/bin/python3 -m play_presence run" in unit
+    assert "RuntimeDirectory=play-presence" in unit
+    assert "ReadOnlyPaths=/opt/play-presence /mnt/mmc/Roms" in unit
     assert "RuntimeDirectoryMode=0700" in unit
     assert "User=root" in unit
 
@@ -55,7 +55,7 @@ def test_installer_preserves_existing_config_and_password(tmp_path: Path, monkey
     installer.install(None, None, enable=False, start=False)
     assert (config_dir / "config.json").read_text(encoding="utf-8") == '{"existing":true}'
     assert (config_dir / "mqtt-password").read_text(encoding="utf-8") == "existing-secret\n"
-    assert (app / "src/rg40xx_game_presence/__main__.py").exists()
+    assert (app / "src/play_presence/__main__.py").exists()
     assert unit.exists()
     assert any("check-config" in command for command in commands)
 
@@ -81,7 +81,7 @@ def test_installer_rolls_back_application_on_failure(tmp_path: Path, monkeypatch
 
 
 def test_service_disables_bytecode_and_limits_address_families() -> None:
-    unit = (ROOT / "deploy/rg40xx-game-presence.service").read_text(encoding="utf-8")
+    unit = (ROOT / "deploy/play-presence.service").read_text(encoding="utf-8")
     assert "PYTHONDONTWRITEBYTECODE=1" in unit
     assert "RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6" in unit
     assert "ProtectSystem=full" in unit
