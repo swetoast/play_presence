@@ -171,19 +171,40 @@ class MqttPresence:
 
     def _on_connect(self, client: Any, userdata: Any, flags: Any, rc: int) -> None:
         if rc != 0:
-            with self._lock: self._connected = False
-            if self._limiter.allow(f"connect-{rc}"): _LOGGER.warning("MQTT connection rejected with code %s", rc)
+            with self._lock:
+                self._connected = False
+            if self._limiter.allow(f"connect-{rc}"):
+                _LOGGER.warning("MQTT connection rejected with code %s", rc)
             return
-        recovery_ok = True
-        for topic, payload in tuple(self._discovery_provider()):
-            if self._publish(topic, payload, "discovery") is None: recovery_ok = False
-        if self._publish(self.config.availability_topic, "online", "availability") is None: recovery_ok = False
+
+        # Availability is the highest-priority retained message. Publishing it
+        # before discovery prevents a bounded Paho queue from leaving the old
+        # retained offline value in place.
         with self._lock:
-            self._connected = True; self._last_state = None; self._last_artwork = None
+            self._connected = True
+            self._last_state = None
+            self._last_artwork = None
             self._pending_state = self._latest is not None
             self._pending_artwork = self._latest is not None
-        if self._latest is not None and not self._flush_latest(): recovery_ok = False
-        _LOGGER.info("MQTT connected") if recovery_ok else _LOGGER.warning("MQTT connected but retained recovery was incomplete")
+
+        recovery_ok = True
+        if self._publish(self.config.availability_topic, "online", "availability") is None:
+            recovery_ok = False
+
+        # Restore the latest game state and artwork before discovery traffic.
+        if self._latest is not None and not self._flush_latest():
+            recovery_ok = False
+
+        # Discovery is lower priority. Failed records are retried on the next
+        # connection rather than being allowed to block availability.
+        for topic, payload in tuple(self._discovery_provider()):
+            if self._publish(topic, payload, "discovery") is None:
+                recovery_ok = False
+
+        if recovery_ok:
+            _LOGGER.info("MQTT connected")
+        else:
+            _LOGGER.warning("MQTT connected but retained recovery was incomplete")
 
     def _on_disconnect(self, client: Any, userdata: Any, rc: int) -> None:
         with self._lock: self._connected = False
