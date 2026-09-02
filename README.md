@@ -2,7 +2,11 @@
 
 Play Presence lets Home Assistant know which game is running on an Anbernic handheld. It detects games started through RetroArch or a native emulator, resolves a clean title, finds matching local artwork, and publishes the result over MQTT.
 
-Play Presence is intended for Anbernic devices running Linux. The **RG40XX V running TF1 stock firmware is the currently verified model**.
+Play Presence is intended for Anbernic devices running Linux. 
+
+Verified Models:
+
+* RG40XX V
 
 Current release: **0.6.9**.
 
