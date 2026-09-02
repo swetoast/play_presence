@@ -55,20 +55,34 @@ If `curl` is unavailable:
 wget -qO- https://raw.githubusercontent.com/swetoast/play_presence/main/install.sh | sh
 ```
 
-On the first installation, Play Presence asks for the MQTT password and hides the input while you type. The installer downloads the current source into `/tmp`, validates the project layout, installs and starts the service, removes temporary files, and prints the installed version and service status.
+The interactive installer asks for:
 
-Run the same command again to update Play Presence. Existing configuration and MQTT credentials are preserved.
+- MQTT host
+- MQTT port
+- MQTT username
+- MQTT topic prefix
+- MQTT password
 
-### Non-interactive first installation
+The password is hidden while you type. The installer downloads the current source into `/tmp`, validates the project layout, installs and starts the service, removes temporary files, and prints the installed version and service status.
 
-If the MQTT password is already stored in a protected file:
+Run the same command again to update Play Presence.
+
+## Uninstallation
+
+To completely remove Play Presence, including its configuration and MQTT credentials, run:
 
 ```sh
-curl -fL -o /tmp/play-presence-install.sh \
-  https://raw.githubusercontent.com/swetoast/play_presence/main/install.sh
-chmod +x /tmp/play-presence-install.sh
-/tmp/play-presence-install.sh --password-file /path/to/mqtt-password
+curl -fsSL https://raw.githubusercontent.com/swetoast/play_presence/main/install.sh | sh -s -- uninstall
 ```
+
+If `curl` is unavailable:
+
+```sh
+wget -qO- https://raw.githubusercontent.com/swetoast/play_presence/main/install.sh | sh -s -- uninstall
+```
+
+The uninstaller asks for confirmation before removing anything.
+
 
 ## Home Assistant
 
