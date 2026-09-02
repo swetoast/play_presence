@@ -117,6 +117,7 @@ The retained state message stays focused on the game that is currently running. 
   "emulator": "retroarch",
   "core": "gambatte",
   "rom_file": "Legend of Zelda, The - The Minish Cap (Europe).gba.zip",
+  "started_at": "2026-09-02T05:12:00+02:00",
   "artwork_available": true,
   "artwork_content_type": "image/jpeg"
 }
@@ -351,9 +352,6 @@ sudo -E python3 -m play_presence validate
 
 More detailed project information is available in:
 
-- [`docs/DESIGN.md`](docs/DESIGN.md)
-- [`docs/ROADMAP.md`](docs/ROADMAP.md)
-- [`docs/VALIDATION.md`](docs/VALIDATION.md)
 - [`CHANGELOG.md`](CHANGELOG.md)
 
 ## Contributing and feedback
