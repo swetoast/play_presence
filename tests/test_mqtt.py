@@ -52,3 +52,28 @@ def test_recovery_failure_logged(tmp_path,caplog):
  c.publish=fail
  with caplog.at_level('WARNING'):c.on_connect(c,None,{},0)
  assert 'retained recovery was incomplete' in caplog.text
+
+def test_public_state_contract_contains_only_game_focused_fields():
+    payload = playing().to_payload()
+    assert tuple(payload) == (
+        "state",
+        "game",
+        "system",
+        "system_id",
+        "emulator",
+        "core",
+        "rom_file",
+        "started_at",
+        "artwork_available",
+        "artwork_content_type",
+    )
+    assert not {
+        "play_presence_version",
+        "detection_method",
+        "rom_relative_path",
+        "title_source",
+        "artwork_source",
+        "battery",
+        "cpu",
+        "memory",
+    } & payload.keys()

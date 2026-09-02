@@ -58,7 +58,7 @@ def build_parser() -> argparse.ArgumentParser:
     validate.add_argument(
         "--output",
         type=Path,
-        default=Path("/mnt/mmc/play-presence-validation-v0.6.8.json"),
+        default=Path("/mnt/mmc/play-presence-validation-v0.6.9.json"),
     )
 
     return parser

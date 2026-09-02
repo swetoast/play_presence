@@ -2,7 +2,7 @@
 
 ## Project
 
-- Version: 0.6.8
+- Version: 0.6.9
 - Target: Anbernic RG40XX V
 - Firmware: TF1 stock firmware
 - Status: Phase 5 implementation complete; remaining hardware acceptance pending
@@ -138,7 +138,7 @@ The compatibility audit restored the original two-value `metadata_location()` co
 
 The release process verifies:
 
-- version reports `0.6.8`
+- version reports `0.6.9`
 - source and tests compile
 - test suite passes from a clean extraction
 - ZIP integrity passes
@@ -166,3 +166,7 @@ No repeated one-hour validation is required for this revision unless the short a
 ## GitHub bootstrap validation
 
 Automated checks verify shell syntax, root refusal, dependency checks, temporary workspace cleanup, repository archive URL construction, required-file validation, argument forwarding to the Python installer, and preservation of compatibility-sensitive identifiers. Network download and first-install behavior remain device checks after the repository is populated.
+
+## Version 0.6.9 MQTT contract validation
+
+The MQTT serializer explicitly emits only the approved game-focused fields. Automated regression coverage verifies the exact field set and confirms that software version, detection method, relative path, metadata source, battery, CPU, and memory fields are absent from normal state messages.

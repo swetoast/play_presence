@@ -4,7 +4,7 @@ import json
 import logging
 import threading
 import time
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable, Iterable
 from .config import ConfigError, MqttConfig
@@ -23,8 +23,28 @@ class PublicState:
     started_at: str | None
     artwork_available: bool = False
     artwork_content_type: str | None = None
+    def to_payload(self) -> dict[str, str | bool | None]:
+        """Return only the approved game-focused MQTT state contract."""
+        return {
+            "state": self.state,
+            "game": self.game,
+            "system": self.system,
+            "system_id": self.system_id,
+            "emulator": self.emulator,
+            "core": self.core,
+            "rom_file": self.rom_file,
+            "started_at": self.started_at,
+            "artwork_available": self.artwork_available,
+            "artwork_content_type": self.artwork_content_type,
+        }
+
     def to_json(self) -> str:
-        return json.dumps(asdict(self), ensure_ascii=True, separators=(",", ":"), sort_keys=True)
+        return json.dumps(
+            self.to_payload(),
+            ensure_ascii=True,
+            separators=(",", ":"),
+            sort_keys=True,
+        )
 
 def public_state_from_local(local: LocalState) -> PublicState:
     session = local.session

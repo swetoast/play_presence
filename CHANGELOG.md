@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.6.9 - 2026-09-02
+
+### Changed
+- Locked MQTT state serialization to the approved game-focused field set.
+- Prevented future internal dataclass fields from being published automatically.
+- Added regression coverage that rejects version, detector, filesystem-path, source, battery, CPU, and memory fields from the normal MQTT state.
+- Updated the README with the exact MQTT state contract in natural language.
+
 ## 0.6.8 - 2026-09-02
 
 ### Added
@@ -21,6 +29,7 @@
 - Preserved the public compatibility helpers and restored the complete phase regression modules.
 
 ### Packaging
+- Clarified platform scope in the README: Anbernic devices running Linux, with RG40XX V as the currently verified model.
 - Reworked README as a concise user-facing project introduction with highlights, one-line installation, usage, architecture, security, troubleshooting, documentation links, and contribution guidance. No emoji are used.
 - Added a root-only GitHub bootstrap installer with curl/wget fallback, temporary extraction, source validation, secure first-install MQTT password prompt, cleanup, version output, and service-status output.
 - Completed the Play Presence rename for the package, command, installation paths, runtime path, and systemd unit. Added migration from previous installed paths and service names while preserving MQTT topics and Home Assistant unique IDs.

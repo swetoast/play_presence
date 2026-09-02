@@ -4,6 +4,8 @@ Play Presence lets Home Assistant know which game is currently running on an Anb
 
 The project is intended for Anbernic devices running Linux. The **RG40XX V running TF1 stock firmware is the currently verified model**.
 
+Current release: **0.6.9**.
+
 ## Why use Play Presence?
 
 If you already use Home Assistant, Play Presence gives your handheld a useful live status without adding a web server or enabling remote-control features on the device.
@@ -102,7 +104,9 @@ Play Presence uses MQTT discovery to create these entities:
 
 All entities are grouped under the same device in Home Assistant.
 
-A typical playing state contains information such as:
+## MQTT state data
+
+The retained state message stays focused on the game that is currently running. A playing state looks like this:
 
 ```json
 {
@@ -118,7 +122,7 @@ A typical playing state contains information such as:
 }
 ```
 
-When no game is running, the state changes to `idle` and the previous artwork is cleared.
+When no game is running, `state` changes to `idle`, the game fields become empty, and the previous artwork is cleared. Play Presence does not add software-version, detector, filesystem-path, battery, performance, or other diagnostic fields to the normal game state.
 
 ## How game detection works
 
