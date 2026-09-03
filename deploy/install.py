@@ -74,11 +74,18 @@ def _validate_json(path: Path) -> None:
         raise InstallError("configuration source must contain a JSON object")
 
 
-def _migrate_topic_prefix(config_path: Path) -> None:
-    """Move only the exact legacy default MQTT topic prefix to the current name.
+LEGACY_CONFIG_DEFAULTS = {
+    "topic_prefix": ("rg40xxv", "play-presence"),
+    "client_id": ("rg40xxv-game-presence", "play-presence"),
+}
 
-    A custom prefix is left untouched. Rewriting the installed config lets an
-    existing deployment adopt the renamed topics on update; the daemon then
+
+def _migrate_config(config_path: Path) -> None:
+    """Normalize only the exact legacy default MQTT identifiers to current names.
+
+    Rewrites ``topic_prefix`` and ``client_id`` only when they still hold the
+    exact previous defaults, so any custom value is preserved. This lets an
+    existing deployment adopt the renamed identifiers on update; the daemon then
     clears the old retained topics on its next connection.
     """
     try:
@@ -86,9 +93,15 @@ def _migrate_topic_prefix(config_path: Path) -> None:
     except (OSError, json.JSONDecodeError):
         return
     mqtt = data.get("mqtt")
-    if not isinstance(mqtt, dict) or mqtt.get("topic_prefix") != "rg40xxv":
+    if not isinstance(mqtt, dict):
         return
-    mqtt["topic_prefix"] = "play-presence"
+    changed = False
+    for field, (old_default, new_value) in LEGACY_CONFIG_DEFAULTS.items():
+        if mqtt.get(field) == old_default:
+            mqtt[field] = new_value
+            changed = True
+    if not changed:
+        return
     temporary = config_path.with_name(config_path.name + ".migrate.tmp")
     temporary.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     _secure(temporary, 0o600)
@@ -142,7 +155,7 @@ def install(config_source: Path | None, password_source: Path | None, enable: bo
         if not installed_config.exists():
             shutil.copy2(legacy_config if legacy_config.is_file() else source_config, installed_config)
         _secure(installed_config, 0o600)
-        _migrate_topic_prefix(installed_config)
+        _migrate_config(installed_config)
         if password_source is not None and password is not None:
             temporary_password = CONFIG_DIR / ".mqtt-password.tmp"
             temporary_password.write_text(password + "\n", encoding="utf-8")

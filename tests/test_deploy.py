@@ -139,25 +139,39 @@ def test_service_unit_carries_full_hardening_and_rate_limit() -> None:
     assert not missing, f"service unit is missing hardening directives: {missing}"
 
 
-def test_migrate_topic_prefix_moves_legacy_default(tmp_path: Path) -> None:
+def test_migrate_config_moves_legacy_defaults(tmp_path: Path) -> None:
     path = tmp_path / "config.json"
-    path.write_text('{"mqtt": {"host": "10.0.0.5", "topic_prefix": "rg40xxv", "username": "rg40xxv"}}', encoding="utf-8")
-    installer._migrate_topic_prefix(path)
+    path.write_text(
+        '{"mqtt": {"host": "10.0.0.5", "topic_prefix": "rg40xxv", "client_id": "rg40xxv-game-presence", "username": "rg40xxv"}}',
+        encoding="utf-8",
+    )
+    installer._migrate_config(path)
     data = __import__("json").loads(path.read_text(encoding="utf-8"))
     assert data["mqtt"]["topic_prefix"] == "play-presence"
+    assert data["mqtt"]["client_id"] == "play-presence"
     assert data["mqtt"]["username"] == "rg40xxv"  # credentials untouched
 
 
-def test_migrate_topic_prefix_preserves_custom_prefix(tmp_path: Path) -> None:
+def test_migrate_config_preserves_custom_values(tmp_path: Path) -> None:
     path = tmp_path / "config.json"
-    original = '{"mqtt": {"topic_prefix": "handheld/presence"}}'
+    original = '{"mqtt": {"topic_prefix": "handheld/presence", "client_id": "my-handheld"}}'
     path.write_text(original, encoding="utf-8")
-    installer._migrate_topic_prefix(path)
+    installer._migrate_config(path)
     assert path.read_text(encoding="utf-8") == original
 
 
-def test_migrate_topic_prefix_ignores_config_without_prefix(tmp_path: Path) -> None:
+def test_migrate_config_migrates_each_field_independently(tmp_path: Path) -> None:
+    # Legacy client_id but a custom topic prefix: only the client_id moves.
+    path = tmp_path / "config.json"
+    path.write_text('{"mqtt": {"topic_prefix": "custom", "client_id": "rg40xxv-game-presence"}}', encoding="utf-8")
+    installer._migrate_config(path)
+    data = __import__("json").loads(path.read_text(encoding="utf-8"))
+    assert data["mqtt"]["topic_prefix"] == "custom"
+    assert data["mqtt"]["client_id"] == "play-presence"
+
+
+def test_migrate_config_ignores_config_without_mqtt(tmp_path: Path) -> None:
     path = tmp_path / "config.json"
     path.write_text('{"existing": true}', encoding="utf-8")
-    installer._migrate_topic_prefix(path)
+    installer._migrate_config(path)
     assert path.read_text(encoding="utf-8") == '{"existing": true}'

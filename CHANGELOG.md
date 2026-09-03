@@ -6,7 +6,7 @@
 - Renamed the default MQTT topic prefix from `rg40xxv` to `play-presence`, so state, availability, and artwork publish under `play-presence/*` by default. The MQTT username and password are unchanged. A custom `topic_prefix` in an existing configuration is preserved.
 
 ### Migration
-- The installer rewrites only the exact legacy default `topic_prefix` (`rg40xxv`) to `play-presence` in the installed configuration, leaving any custom prefix untouched, so an existing deployment adopts the renamed topics on update.
+- The installer rewrites only the exact legacy default MQTT identifiers in the installed configuration — `topic_prefix` (`rg40xxv` → `play-presence`) and `client_id` (`rg40xxv-game-presence` → `play-presence`) — leaving any custom value untouched, so an existing deployment adopts the renamed identifiers on update. Each field migrates independently.
 - On connect, when a deployment is off the legacy prefix, the daemon publishes empty retained messages to `rg40xxv/state`, `rg40xxv/availability`, and `rg40xxv/artwork` to clear stale retained values. It never clears these while still on the legacy prefix, so a deployment that keeps `rg40xxv` is not disturbed. Home Assistant unique IDs are unchanged, so entities are re-pointed to the new topics rather than duplicated.
 
 ### Performance
