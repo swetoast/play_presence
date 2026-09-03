@@ -24,7 +24,7 @@ def make(tmp_path,discovery=()):
 def playing():return PublicState('playing','Test Game','Game Boy Advance','gba','gba_emu',None,'test.gba.zip',None)
 def pubs(c,t):return [x for x in c.calls if x[0]=='publish' and x[1]==t]
 def test_client_configuration(tmp_path):
- m,c,cfg=make(tmp_path);assert c.kwargs=={'client_id':'rg40xxv-game-presence','clean_session':True,'protocol':4};assert ('queue',8) in c.calls
+ m,c,cfg=make(tmp_path);assert c.kwargs=={'client_id':'play-presence','clean_session':True,'protocol':4};assert ('queue',8) in c.calls
 def test_start(tmp_path):
  m,c,cfg=make(tmp_path);m.start();assert ('connect','10.0.0.5',1883,60) in c.calls and ('loop_start',) in c.calls
 def test_disconnected_latest_only_and_reconnect(tmp_path):

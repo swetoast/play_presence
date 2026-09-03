@@ -41,6 +41,7 @@ _RETROARCH_OVERLAP = 4096
 _RETROARCH_MAX_REGION = 128 * 1024 * 1024
 _RETROARCH_SCAN_LIMIT = 384 * 1024 * 1024
 _RETROARCH_REGION_CACHE: dict[tuple[int, int], tuple[int, int]] = {}
+_RETROARCH_CONTENT_CACHE: dict[tuple[int, int], tuple[str | None, str]] = {}
 
 
 class PowerMode(str, Enum):
@@ -243,11 +244,22 @@ def _retroarch_memory_content(record: ProcessRecord, config: DetectionConfig, pr
     core_path, regions = _retroarch_regions(record.pid, proc_root)
     if core_path is None or not regions:
         return None, None
-    core_bytes = os.fsencode(core_path)
     cache_key = (record.pid, record.start_ticks)
-    cached = _RETROARCH_REGION_CACHE.get(cache_key)
-    if cached in regions:
-        regions = [cached] + [region for region in regions if region != cached]
+    cached_content = _RETROARCH_CONTENT_CACHE.get(cache_key)
+    if cached_content is not None:
+        cached_core, cached_rom = cached_content
+        # A live RetroArch process keeps the same content for its lifetime, and
+        # the session identity already treats rom_path as fixed per (pid,
+        # start_ticks). Once the content is resolved, re-confirm only that the
+        # ROM still exists and skip the bounded-but-costly full memory rescan on
+        # every poll while the same process keeps running.
+        if os.path.isfile(cached_rom):
+            return cached_core, cached_rom
+        _RETROARCH_CONTENT_CACHE.pop(cache_key, None)
+    core_bytes = os.fsencode(core_path)
+    cached_region = _RETROARCH_REGION_CACHE.get(cache_key)
+    if cached_region in regions:
+        regions = [cached_region] + [region for region in regions if region != cached_region]
     scores: dict[str, tuple[int, tuple[int, int]]] = {}
     scanned = 0
     try:
@@ -285,9 +297,12 @@ def _retroarch_memory_content(record: ProcessRecord, config: DetectionConfig, pr
     if not scores:
         return _core_id(core_path), None
     best, (_, best_region) = sorted(scores.items(), key=lambda item: (-item[1][0], item[0]))[0]
+    core_id = _core_id(core_path)
     _RETROARCH_REGION_CACHE.clear()
     _RETROARCH_REGION_CACHE[cache_key] = best_region
-    return _core_id(core_path), best
+    _RETROARCH_CONTENT_CACHE.clear()
+    _RETROARCH_CONTENT_CACHE[cache_key] = (core_id, best)
+    return core_id, best
 
 
 def normalize_process(record: ProcessRecord, config: DetectionConfig, proc_root: Path = Path("/proc")) -> SessionCandidate | None:

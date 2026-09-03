@@ -39,7 +39,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     verify = stages.add_parser("verify", help="perform post-reboot checks")
     verify.add_argument("--state-dir", default="/var/lib/play-presence-probe")
-    verify.add_argument("--output", default="/mnt/mmc/play-presence-phase0-v0.1.0.json")
+    verify.add_argument("--output", default=f"/mnt/mmc/play-presence-phase0-v{__version__}.json")
     verify.add_argument("--keep-artifacts", action="store_true")
 
     check = commands.add_parser("check-config", help="validate Phase 1 configuration")
@@ -58,7 +58,7 @@ def build_parser() -> argparse.ArgumentParser:
     validate.add_argument(
         "--output",
         type=Path,
-        default=Path("/mnt/mmc/play-presence-validation-v0.6.9.json"),
+        default=Path(f"/mnt/mmc/play-presence-validation-v{__version__}.json"),
     )
 
     return parser

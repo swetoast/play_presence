@@ -203,7 +203,7 @@ def main(argv: list[str] | None = None) -> int:
     except InstallError as exc:
         print(f"Install failed: {exc}", file=sys.stderr)
         return 2
-    print("RG40XX Game Presence installed.")
+    print("Play Presence installed.")
     return 0
 
 

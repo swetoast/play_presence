@@ -88,6 +88,9 @@ download_source() {
 
     mkdir -p "$SOURCE"
     url="https://github.com/$REPOSITORY/archive/refs/heads/$BRANCH.tar.gz"
+    # Integrity of this download rests on the GitHub TLS connection and on the
+    # layout checks performed below; there is no separate signature or checksum.
+    # For stronger guarantees, clone a pinned commit and run deploy/install.py.
     printf 'Downloading Play Presence...\n'
 
     if command -v curl >/dev/null 2>&1; then

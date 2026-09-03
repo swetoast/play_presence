@@ -184,15 +184,16 @@ class MqttPresence:
             self._connected = True
             self._last_state = None
             self._last_artwork = None
-            self._pending_state = self._latest is not None
-            self._pending_artwork = self._latest is not None
+            has_latest = self._latest is not None
+            self._pending_state = has_latest
+            self._pending_artwork = has_latest
 
         recovery_ok = True
         if self._publish(self.config.availability_topic, "online", "availability") is None:
             recovery_ok = False
 
         # Restore the latest game state and artwork before discovery traffic.
-        if self._latest is not None and not self._flush_latest():
+        if has_latest and not self._flush_latest():
             recovery_ok = False
 
         # Discovery is lower priority. Failed records are retried on the next

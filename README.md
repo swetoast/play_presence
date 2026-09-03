@@ -28,7 +28,7 @@ Current release: **0.6.9**.
 - An MQTT broker that the handheld can reach
 - Root SSH access to the handheld
 - Python 3.10 or later
-- Paho MQTT 1.5.x
+- Paho MQTT 1.5.x or 1.6.x (the 1.x callback API; 2.x is not supported)
 - `curl` or `wget`
 
 Verified environment:
@@ -66,6 +66,10 @@ The interactive installer asks for:
 The password is hidden while you type. The installer downloads the current source into `/tmp`, validates the project layout, installs and starts the service, removes temporary files, and prints the installed version and service status.
 
 Run the same command again to update Play Presence.
+
+### Installer trust model
+
+The installer downloads the current `main` branch archive directly from GitHub over HTTPS and runs it as root. Its integrity therefore rests on the GitHub TLS connection and on the layout checks the installer performs before running anything (it aborts unless `deploy/install.py`, `pyproject.toml`, and `config/config.example.json` are present in the extracted tree). There is no separate signature or published-checksum verification. If you require stronger guarantees, clone the repository at a specific commit or tag over SSH, inspect it, and run `python3 deploy/install.py` directly instead of piping the bootstrap script to a shell.
 
 ## Uninstallation
 

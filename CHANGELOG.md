@@ -1,5 +1,22 @@
 # Changelog
 
+## Unreleased
+
+### Performance
+- Memoized resolved RetroArch content per live process so contentless playlist launches no longer re-scan bounded process memory on every poll; a running session now re-confirms only that its ROM still exists and reuses the cached core and ROM path until the process changes.
+
+### Fixed
+- Updated the bootstrap installer regression test to match the current interactive `install.sh` (workspace path, `deploy/install.py` invocation, password handling) and added uninstall coverage; the suite no longer fails on a clean checkout.
+- Marked `install.sh` executable in the repository.
+- Derived the `probe verify` and `validate` default output filenames from the project version instead of hardcoded, drifting version strings.
+- Aligned the default MQTT `client_id` to `play-presence` across the dataclass default, the loader fallback, and `config.example.json`, matching what the installer already writes.
+- Corrected the installer success message branding to Play Presence.
+- Captured the latest-state presence under the connection lock in the MQTT reconnect path instead of reading it unlocked.
+
+### Documentation
+- Corrected the supported Paho MQTT range to 1.5.x or 1.6.x (1.x callback API).
+- Documented the installer trust model: integrity rests on GitHub TLS plus source-layout checks, with no separate signature or checksum, and noted the pinned-clone alternative.
+
 ## 0.6.9 - 2026-09-02
 
 ### Changed
