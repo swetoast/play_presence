@@ -137,3 +137,27 @@ def test_service_unit_carries_full_hardening_and_rate_limit() -> None:
     ]
     missing = [directive for directive in required if directive not in unit]
     assert not missing, f"service unit is missing hardening directives: {missing}"
+
+
+def test_migrate_topic_prefix_moves_legacy_default(tmp_path: Path) -> None:
+    path = tmp_path / "config.json"
+    path.write_text('{"mqtt": {"host": "10.0.0.5", "topic_prefix": "rg40xxv", "username": "rg40xxv"}}', encoding="utf-8")
+    installer._migrate_topic_prefix(path)
+    data = __import__("json").loads(path.read_text(encoding="utf-8"))
+    assert data["mqtt"]["topic_prefix"] == "play-presence"
+    assert data["mqtt"]["username"] == "rg40xxv"  # credentials untouched
+
+
+def test_migrate_topic_prefix_preserves_custom_prefix(tmp_path: Path) -> None:
+    path = tmp_path / "config.json"
+    original = '{"mqtt": {"topic_prefix": "handheld/presence"}}'
+    path.write_text(original, encoding="utf-8")
+    installer._migrate_topic_prefix(path)
+    assert path.read_text(encoding="utf-8") == original
+
+
+def test_migrate_topic_prefix_ignores_config_without_prefix(tmp_path: Path) -> None:
+    path = tmp_path / "config.json"
+    path.write_text('{"existing": true}', encoding="utf-8")
+    installer._migrate_topic_prefix(path)
+    assert path.read_text(encoding="utf-8") == '{"existing": true}'

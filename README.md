@@ -178,9 +178,9 @@ Play Presence never downloads, converts, resizes, replaces, or writes artwork. A
 Default topics:
 
 ```text
-rg40xxv/availability
-rg40xxv/state
-rg40xxv/artwork
+play-presence/availability
+play-presence/state
+play-presence/artwork
 ```
 
 The state topic contains JSON. The artwork topic contains raw image bytes without Base64 encoding or a JSON wrapper.
@@ -245,7 +245,7 @@ python3 -m play_presence check-config \
 
 ### Home Assistant shows old artwork
 
-Return to the launcher or start a game without artwork. Play Presence should publish an empty retained message to `rg40xxv/artwork`. If the old image remains, verify that the service is connected to MQTT and that Home Assistant received the update.
+Return to the launcher or start a game without artwork. Play Presence should publish an empty retained message to `play-presence/artwork`. If the old image remains, verify that the service is connected to MQTT and that Home Assistant received the update.
 
 ### A game has no artwork
 

@@ -77,3 +77,26 @@ def test_public_state_contract_contains_only_game_focused_fields():
         "cpu",
         "memory",
     } & payload.keys()
+
+
+def _tombstones(c):
+    return [x for x in c.calls if x[0] == 'publish' and x[1].startswith('rg40xxv/') and x[2] in (b'', '')]
+
+
+def test_legacy_topics_cleared_when_off_legacy_prefix(tmp_path):
+    m, c, cfg = make(tmp_path)  # default prefix is now play-presence
+    assert cfg.topic_prefix == 'play-presence'
+    c.on_connect(c, None, {}, 0)
+    cleared = {x[1] for x in _tombstones(c)}
+    assert cleared == {'rg40xxv/state', 'rg40xxv/availability', 'rg40xxv/artwork'}
+    assert all(x[4] is True for x in _tombstones(c))  # retained
+
+
+def test_legacy_prefix_deployment_is_not_clobbered(tmp_path):
+    p = tmp_path / 'pw'
+    p.write_text('secret')
+    cfg = MqttConfig(password_file=p, topic_prefix='rg40xxv')
+    c = Client()
+    m = MqttPresence(cfg, lambda **kw: (setattr(c, 'kwargs', kw) or c), lambda: ())
+    c.on_connect(c, None, {}, 0)
+    assert _tombstones(c) == []  # no empty retained wipe of a live deployment's own topics

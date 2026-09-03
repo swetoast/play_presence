@@ -130,12 +130,12 @@ PID, start ticks, absolute paths, power values, intervals, credentials, and artw
 The daemon uses one persistent Paho MQTT 1.5.1 client, MQTT 3.1.1, QoS 1, retained availability, retained state, and retained binary artwork.
 
 ```text
-rg40xxv/availability
-rg40xxv/state
-rg40xxv/artwork
+play-presence/availability
+play-presence/state
+play-presence/artwork
 ```
 
-Only the latest public state and artwork are retained in application memory. State and artwork have separate pending flags. A transient publication rejection is retried on a later detector poll. Reconnect republishes discovery, availability, latest state, and latest artwork. Idle or missing artwork publishes an empty retained artwork payload.
+Only the latest public state and artwork are retained in application memory. State and artwork have separate pending flags. A transient publication rejection is retried on a later detector poll. Reconnect republishes discovery, availability, latest state, and latest artwork. Idle or missing artwork publishes an empty retained artwork payload. State, availability, and artwork use the `play-presence` topic prefix; a deployment that moves off the earlier `rg40xxv` prefix clears the old retained topics once with empty retained messages, and Home Assistant unique IDs stay stable so no entity is duplicated.
 
 Home Assistant discovery adds an MQTT image entity while preserving the current-game sensor, playing binary sensor, optional system sensor, stable identifiers, and shared device identity.
 
@@ -169,6 +169,6 @@ The 0.6.8 work is an explicit revision inside Phase 5, not a new phase.
 
 ## Distribution and naming
 
-The project and installed software identifiers are **Play Presence**. Version 0.6.8 uses the `play_presence` Python package, `play-presence` command, `/opt/play-presence`, `/etc/play-presence`, `/run/play-presence`, and `play-presence.service`. The installer migrates configuration and credentials from the previous installation names and retires the previous service only after the new installation succeeds. MQTT topics and Home Assistant unique IDs remain stable to avoid duplicate entities.
+The project and installed software identifiers are **Play Presence**. Version 0.6.8 uses the `play_presence` Python package, `play-presence` command, `/opt/play-presence`, `/etc/play-presence`, `/run/play-presence`, and `play-presence.service`. The installer migrates configuration and credentials from the previous installation names and retires the previous service only after the new installation succeeds. It also migrates the earlier default `rg40xxv` MQTT topic prefix to `play-presence`, leaving any custom prefix untouched. Home Assistant unique IDs remain stable, and the daemon clears the old retained topics once on connect, so no duplicate entities appear across the rename.
 
 The repository bootstrap `install.sh` performs no direct installation logic. It requires root, downloads the configured GitHub branch into volatile `/tmp`, validates the expected project files, invokes the existing Python installer, and removes temporary files. Configuration preservation, credential handling, staged replacement, rollback, systemd enablement, and service startup remain owned by `deploy/install.py`.

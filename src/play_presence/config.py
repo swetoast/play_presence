@@ -14,7 +14,7 @@ class DetectionConfig:
     rom_roots:tuple[Path,...]=(Path('/mnt/mmc/Roms'),); retroarch_executable:Path=Path('/mnt/vendor/deep/retro/retroarch'); power_online_path:Path=Path('/sys/class/power_supply/axp2202-usb/online'); poll:PollConfig=field(default_factory=PollConfig); aliases:dict[str,tuple[str,str]]=field(default_factory=lambda:dict(DEFAULT_ALIASES))
 @dataclass(frozen=True)
 class MqttConfig:
-    host:str='10.0.0.5'; port:int=1883; username:str='rg40xxv'; password_file:Path=Path('/etc/play-presence/mqtt-password'); client_id:str='play-presence'; topic_prefix:str='rg40xxv'; keepalive_seconds:int=60
+    host:str='10.0.0.5'; port:int=1883; username:str='rg40xxv'; password_file:Path=Path('/etc/play-presence/mqtt-password'); client_id:str='play-presence'; topic_prefix:str='play-presence'; keepalive_seconds:int=60
     @property
     def availability_topic(self): return f'{self.topic_prefix}/availability'
     @property
@@ -87,6 +87,6 @@ def load_config(path,check_password_file=False):
     _reject(h,{'enabled','include_system_sensor','discovery_prefix'},'home_assistant')
     return AppConfig(
       DetectionConfig(roots,_abs(d.get('retroarch_executable','/mnt/vendor/deep/retro/retroarch'),'detection.retroarch_executable'),_abs(d.get('power_online_path','/sys/class/power_supply/axp2202-usb/online'),'detection.power_online_path'),PollConfig(_pos(d.get('playing_poll_seconds',5),'playing_poll_seconds'),_pos(d.get('idle_usb_poll_seconds',5),'idle_usb_poll_seconds'),_pos(d.get('idle_battery_poll_seconds',10),'idle_battery_poll_seconds'),_pos(d.get('unknown_power_poll_seconds',5),'unknown_power_poll_seconds')),aliases),
-      MqttConfig(_nonempty(m.get('host','10.0.0.5'),'mqtt.host'),_int(m.get('port',1883),'mqtt.port',1,65535),_nonempty(m.get('username','rg40xxv'),'mqtt.username'),pw,_nonempty(m.get('client_id','play-presence'),'mqtt.client_id'),_topic(m.get('topic_prefix','rg40xxv')),_int(m.get('keepalive_seconds',60),'mqtt.keepalive_seconds',10,3600)),
+      MqttConfig(_nonempty(m.get('host','10.0.0.5'),'mqtt.host'),_int(m.get('port',1883),'mqtt.port',1,65535),_nonempty(m.get('username','rg40xxv'),'mqtt.username'),pw,_nonempty(m.get('client_id','play-presence'),'mqtt.client_id'),_topic(m.get('topic_prefix','play-presence')),_int(m.get('keepalive_seconds',60),'mqtt.keepalive_seconds',10,3600)),
       DiscoveryConfig(_bool(h.get('enabled',True),'home_assistant.enabled'),_bool(h.get('include_system_sensor',False),'home_assistant.include_system_sensor'),_topic(h.get('discovery_prefix','homeassistant'))),
       MetadataConfig(fn,_abs(ov,'metadata.overrides_file') if ov else None,_int(md.get('overrides_max_bytes',1048576),'metadata.overrides_max_bytes',1,16777216),_int(md.get('artwork_max_bytes',2097152),'metadata.artwork_max_bytes',1024,16777216)))

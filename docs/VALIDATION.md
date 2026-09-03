@@ -143,6 +143,7 @@ Verified:
 - procfs candidate scanning locates a live game session and ignores non-numeric entries
 - the current-process liveness check matches the exact process instance and fails closed on a reused pid, a changed executable, or a vanished process
 - per-process RetroArch content memoization reuses the resolved core and ROM path without re-scanning process memory
+- the MQTT topic prefix rename to `play-presence`: legacy retained topics are cleared on connect only when off the legacy prefix, a live `rg40xxv` deployment is never disturbed, and the installer migrates only the exact legacy default prefix while preserving a custom one
 - the interactive bootstrap installer regression suite, including uninstall support and an executable script
 - the MQTT reconnect and poll-time retry contract is preserved with pending-only serialization
 - the aligned default `client_id`

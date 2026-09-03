@@ -5,7 +5,7 @@
     "username": "rg40xxv",
     "password_file": "/etc/play-presence/mqtt-password",
     "client_id": "play-presence",
-    "topic_prefix": "rg40xxv",
+    "topic_prefix": "play-presence",
     "keepalive_seconds": 60
   },
   "detection": {

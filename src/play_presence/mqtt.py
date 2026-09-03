@@ -9,6 +9,11 @@ from pathlib import Path
 from typing import Any, Callable, Iterable
 from .config import ConfigError, MqttConfig
 from .daemon import LocalState
+
+# Retained state/availability/artwork published under this prefix by earlier
+# releases are cleared once a deployment moves to the current prefix, so no
+# stale message lingers on the broker after the rename.
+_LEGACY_TOPIC_PREFIX = "rg40xxv"
 _LOGGER = logging.getLogger(__name__)
 
 @dataclass(frozen=True)
@@ -171,6 +176,12 @@ class MqttPresence:
             with self._lock: self._connected = False
             self._started = False
 
+    def _clear_legacy_topics(self) -> None:
+        if self.config.topic_prefix == _LEGACY_TOPIC_PREFIX:
+            return
+        for suffix in ("state", "availability", "artwork"):
+            self._publish(f"{_LEGACY_TOPIC_PREFIX}/{suffix}", b"", "legacy-tombstone")
+
     def _on_connect(self, client: Any, userdata: Any, flags: Any, rc: int) -> None:
         if rc != 0:
             with self._lock:
@@ -203,6 +214,11 @@ class MqttPresence:
         for topic, payload in tuple(self._discovery_provider()):
             if self._publish(topic, payload, "discovery") is None:
                 recovery_ok = False
+
+        # One-time hygiene after the topic rename: clear retained values left on
+        # the legacy prefix. Skipped when still on the legacy prefix so a live
+        # deployment never clears its own current topics.
+        self._clear_legacy_topics()
 
         if recovery_ok:
             _LOGGER.info("MQTT connected")

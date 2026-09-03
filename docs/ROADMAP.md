@@ -110,7 +110,7 @@
 - [ ] P5-SEC-001 Persistent write review: static review complete (no steady-state persistent writes; only the tmpfs `/run` failure record); device `write_bytes == 0` evidence pending
 - [ ] P5-SEC-002 Journald bounds: static review complete (no per-poll logging; warnings rate-limited); device journal capture pending
 - [x] P5-SEC-003 No inbound interface or remote control
-- [ ] P5-SEC-004 Full transition/outage matrix in progress
+- [ ] P5-SEC-004 Full transition/outage matrix in progress: Wi-Fi outage and recovery cell confirmed; broker-outage and detection-transition cells pending
 
 ### Historical Phase 5 corrections
 

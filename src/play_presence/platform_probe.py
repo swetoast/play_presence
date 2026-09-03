@@ -190,7 +190,7 @@ def _mqtt_measurement() -> dict[str, Any]:
     except (ImportError, OSError) as exc:
         return {"available": False, "error": type(exc).__name__, "before": before}
     imported = _memory_kib()
-    client = mqtt.Client(client_id=f"rg40xx-phase0-{os.getpid()}", clean_session=True)
+    client = mqtt.Client(client_id=f"play-presence-phase0-{os.getpid()}", clean_session=True)
     start = time.monotonic()
     client.loop_start()
     time.sleep(0.15)
@@ -238,7 +238,7 @@ def _mqtt_broker_probe(host: str, port: int, username: str, password_file: str) 
         nonlocal disconnected
         disconnected = True
 
-    client = mqtt.Client(client_id=f"rg40xx-phase0-broker-{os.getpid()}", clean_session=True)
+    client = mqtt.Client(client_id=f"play-presence-phase0-broker-{os.getpid()}", clean_session=True)
     if username:
         client.username_pw_set(username, password)
     client.on_connect = on_connect

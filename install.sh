@@ -114,7 +114,7 @@ read_installed_defaults() {
     DEFAULT_HOST="10.0.0.5"
     DEFAULT_PORT="1883"
     DEFAULT_USERNAME=""
-    DEFAULT_TOPIC_PREFIX="rg40xxv"
+    DEFAULT_TOPIC_PREFIX="play-presence"
 
     [ -f "$INSTALLED_CONFIG" ] || return 0
     eval "$(python3 - "$INSTALLED_CONFIG" <<'PY'
@@ -132,7 +132,7 @@ values = {
     "DEFAULT_HOST": str(mqtt.get("host", "10.0.0.5")),
     "DEFAULT_PORT": str(mqtt.get("port", 1883)),
     "DEFAULT_USERNAME": str(mqtt.get("username", "")),
-    "DEFAULT_TOPIC_PREFIX": str(mqtt.get("topic_prefix", "rg40xxv")),
+    "DEFAULT_TOPIC_PREFIX": str(mqtt.get("topic_prefix", "play-presence")),
 }
 for key, value in values.items():
     print(f"{key}={shlex.quote(value)}")

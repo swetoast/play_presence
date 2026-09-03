@@ -74,6 +74,27 @@ def _validate_json(path: Path) -> None:
         raise InstallError("configuration source must contain a JSON object")
 
 
+def _migrate_topic_prefix(config_path: Path) -> None:
+    """Move only the exact legacy default MQTT topic prefix to the current name.
+
+    A custom prefix is left untouched. Rewriting the installed config lets an
+    existing deployment adopt the renamed topics on update; the daemon then
+    clears the old retained topics on its next connection.
+    """
+    try:
+        data = json.loads(config_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return
+    mqtt = data.get("mqtt")
+    if not isinstance(mqtt, dict) or mqtt.get("topic_prefix") != "rg40xxv":
+        return
+    mqtt["topic_prefix"] = "play-presence"
+    temporary = config_path.with_name(config_path.name + ".migrate.tmp")
+    temporary.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    _secure(temporary, 0o600)
+    os.replace(temporary, config_path)
+
+
 def install(config_source: Path | None, password_source: Path | None, enable: bool, start: bool) -> None:
     _require_root()
     root = _source_root()
@@ -121,6 +142,7 @@ def install(config_source: Path | None, password_source: Path | None, enable: bo
         if not installed_config.exists():
             shutil.copy2(legacy_config if legacy_config.is_file() else source_config, installed_config)
         _secure(installed_config, 0o600)
+        _migrate_topic_prefix(installed_config)
         if password_source is not None and password is not None:
             temporary_password = CONFIG_DIR / ".mqtt-password.tmp"
             temporary_password.write_text(password + "\n", encoding="utf-8")

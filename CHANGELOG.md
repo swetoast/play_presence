@@ -2,6 +2,13 @@
 
 ## 0.7.0 - 2026-09-03
 
+### Changed
+- Renamed the default MQTT topic prefix from `rg40xxv` to `play-presence`, so state, availability, and artwork publish under `play-presence/*` by default. The MQTT username and password are unchanged. A custom `topic_prefix` in an existing configuration is preserved.
+
+### Migration
+- The installer rewrites only the exact legacy default `topic_prefix` (`rg40xxv`) to `play-presence` in the installed configuration, leaving any custom prefix untouched, so an existing deployment adopts the renamed topics on update.
+- On connect, when a deployment is off the legacy prefix, the daemon publishes empty retained messages to `rg40xxv/state`, `rg40xxv/availability`, and `rg40xxv/artwork` to clear stale retained values. It never clears these while still on the legacy prefix, so a deployment that keeps `rg40xxv` is not disturbed. Home Assistant unique IDs are unchanged, so entities are re-pointed to the new topics rather than duplicated.
+
 ### Performance
 - Memoized resolved RetroArch content per live process so contentless playlist launches no longer re-scan bounded process memory on every poll; a running session now re-confirms only that its ROM still exists and reuses the cached core and ROM path until the process changes.
 - Skipped the full `/proc` walk while a game keeps running: the detector re-confirms only the current session's own process (one `exe` link and `stat` read) and falls back to a full scan only when that process changes, since candidate selection already keeps the current session whenever its process is present. State transitions and the idle debounce are unchanged.
