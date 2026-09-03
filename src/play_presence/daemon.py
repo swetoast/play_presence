@@ -4,7 +4,7 @@ import json, threading
 from dataclasses import asdict,dataclass
 from typing import Callable,Any
 from .config import DetectionConfig
-from .detection import SessionCandidate,next_interval,scan_candidates,select_candidate
+from .detection import SessionCandidate,next_interval,scan_candidates,select_candidate,session_still_active
 @dataclass(frozen=True)
 class LocalState:
     state:str; session:SessionCandidate|None; game:str|None=None; artwork:bytes|None=None; artwork_content_type:str|None=None
@@ -21,7 +21,12 @@ def local_state_json(state):return json.dumps({'state':state.state,'session':asd
 def run_local_detector(config,stop_event,on_change=None,title_resolver=None,metadata_resolver=None,on_poll=None):
     tracker=SessionTracker();emitted=False;identity=None;game=None;art=None;ctype=None
     while not stop_event.is_set():
-        state,changed=tracker.update(select_candidate(scan_candidates(config),tracker.current))
+        current=tracker.current
+        if current is not None and session_still_active(current,config.retroarch_executable):
+            detected=current
+        else:
+            detected=select_candidate(scan_candidates(config),current)
+        state,changed=tracker.update(detected)
         if state.state=='playing' and state.session:
             if state.session.identity!=identity:
                 identity=state.session.identity

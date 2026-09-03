@@ -8,13 +8,14 @@ import time
 from datetime import datetime
 from dataclasses import dataclass
 from enum import Enum
+from functools import lru_cache
 from pathlib import Path
 from typing import Callable, Iterable
 
 from .config import DetectionConfig
 
-_GAME_DGE_ROOT = Path("/mnt/vendor/bin/game")
-_OPENBOR_DGE = Path("/mnt/vendor/deep/openBOR/OpenBOR.dge")
+_GAME_DGE_PREFIX = "/mnt/vendor/bin/game/"
+_OPENBOR_DGE_PATH = "/mnt/vendor/deep/openBOR/OpenBOR.dge"
 _EMULATOR_NAMES = {
     "fba4arm": "FinalBurn Alpha 4 ARM",
     "fbasdl": "FinalBurn Alpha SDL",
@@ -35,7 +36,6 @@ _EMULATOR_NAMES = {
 _EXCLUDED_SUFFIXES = {
     ".cfg", ".conf", ".so", ".sav", ".srm", ".state", ".rtc", ".m3u",
 }
-_ROM_PATH_PATTERN = re.compile(rb"/mnt/mmc/Roms/[ -~]{1,512}")
 _RETROARCH_CHUNK = 1024 * 1024
 _RETROARCH_OVERLAP = 4096
 _RETROARCH_MAX_REGION = 128 * 1024 * 1024
@@ -128,14 +128,9 @@ def _plausible_rom(path: str, roots: Iterable[Path]) -> tuple[Path, Path] | None
 
 
 def _is_game_dge(executable: str) -> bool:
-    path = Path(executable)
-    if path == _OPENBOR_DGE:
+    if executable == _OPENBOR_DGE_PATH:
         return True
-    try:
-        path.relative_to(_GAME_DGE_ROOT)
-        return path.name.endswith(".dge")
-    except ValueError:
-        return False
+    return executable.startswith(_GAME_DGE_PREFIX) and executable.endswith(".dge")
 
 
 def _humanize_emulator(identifier: str) -> str:
@@ -215,12 +210,19 @@ def _retroarch_regions(pid: int, proc_root: Path) -> tuple[str | None, list[tupl
     return core_path, regions
 
 
+@lru_cache(maxsize=8)
+def _rom_prefix_patterns(roots: tuple[Path, ...]) -> tuple[re.Pattern[bytes], ...]:
+    patterns = []
+    for root in roots:
+        prefix = re.escape(os.fsencode(str(root).rstrip("/") + "/"))
+        patterns.append(re.compile(prefix + rb"[ -~]{1,512}"))
+    return tuple(patterns)
+
+
 def _memory_rom_candidates(data: bytes, config: DetectionConfig) -> list[str]:
     """Extract complete existing ROM paths while rejecting patch/save derivatives."""
     results: list[str] = []
-    for root in config.rom_roots:
-        prefix = re.escape(os.fsencode(str(root).rstrip("/") + "/"))
-        pattern = re.compile(prefix + rb"[ -~]{1,512}")
+    for pattern in _rom_prefix_patterns(config.rom_roots):
         for match in pattern.finditer(data):
             text = os.fsdecode(match.group(0)).rstrip(" \t,;:)]}")
             candidate = text
@@ -378,36 +380,63 @@ def inspect_process(
     proc_root: Path = Path("/proc"),
     retroarch_executable: Path = Path("/mnt/vendor/deep/retro/retroarch"),
 ) -> ProcessRecord | None:
-    base = proc_root / str(pid)
+    base = f"{os.fspath(proc_root)}/{pid}"
     try:
-        executable = os.fsdecode(os.readlink(base / "exe"))
-        exe_name = Path(executable).name
-        if Path(executable) != retroarch_executable and not _is_game_dge(executable):
+        executable = os.fsdecode(os.readlink(base + "/exe"))
+        if executable != os.fspath(retroarch_executable) and not _is_game_dge(executable):
             return None
-        argv = decode_cmdline((base / "cmdline").read_bytes())
+        with open(base + "/cmdline", "rb") as handle:
+            argv = decode_cmdline(handle.read())
         if not argv:
             return None
-        start_ticks = parse_start_ticks((base / "stat").read_bytes())
+        with open(base + "/stat", "rb") as handle:
+            start_ticks = parse_start_ticks(handle.read())
         return ProcessRecord(pid, executable, argv, start_ticks)
     except (FileNotFoundError, ProcessLookupError, PermissionError, OSError, ValueError):
         return None
 
 
+def session_still_active(
+    current: SessionCandidate,
+    retroarch_executable: Path = Path("/mnt/vendor/deep/retro/retroarch"),
+    proc_root: Path = Path("/proc"),
+) -> bool:
+    """Cheaply confirm the exact process instance behind a session is still alive.
+
+    While a game keeps running, candidate selection already keeps the current
+    session whenever its process is still present, so re-confirming just this one
+    pid is behaviourally identical to a full ``/proc`` walk but far cheaper: it
+    reads only this process's ``exe`` link and ``stat`` line. The executable and
+    start-time together identify the process instance and guard against pid
+    reuse. Any mismatch or missing file falls back to a full scan.
+    """
+    base = f"{os.fspath(proc_root)}/{current.pid}"
+    try:
+        if os.fsdecode(os.readlink(base + "/exe")) != current.executable:
+            return False
+        with open(base + "/stat", "rb") as handle:
+            return parse_start_ticks(handle.read()) == current.process_start_ticks
+    except (OSError, ValueError):
+        return False
+
+
 def scan_candidates(config: DetectionConfig, proc_root: Path = Path("/proc")) -> list[SessionCandidate]:
     candidates: list[SessionCandidate] = []
     try:
-        entries = list(proc_root.iterdir())
+        scanner = os.scandir(os.fspath(proc_root))
     except OSError:
         return candidates
-    for entry in entries:
-        if not entry.name.isdigit():
-            continue
-        record = inspect_process(int(entry.name), proc_root, config.retroarch_executable)
-        if record is None:
-            continue
-        candidate = normalize_process(record, config, proc_root)
-        if candidate is not None:
-            candidates.append(candidate)
+    with scanner:
+        for entry in scanner:
+            name = entry.name
+            if not name.isdigit():
+                continue
+            record = inspect_process(int(name), proc_root, config.retroarch_executable)
+            if record is None:
+                continue
+            candidate = normalize_process(record, config, proc_root)
+            if candidate is not None:
+                candidates.append(candidate)
     return candidates
 
 

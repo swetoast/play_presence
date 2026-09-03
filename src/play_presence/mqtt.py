@@ -128,9 +128,11 @@ class MqttPresence:
     def _flush_latest(self) -> bool:
         with self._lock:
             if not self._connected or self._latest is None: return False
-            payload = self._latest.to_json(); image = self._latest_artwork
-            send_state = self._pending_state or payload != self._last_state
-            send_art = self._pending_artwork or image != self._last_artwork
+            send_state = self._pending_state
+            send_art = self._pending_artwork
+            if not send_state and not send_art: return False
+            payload = self._latest.to_json() if send_state else None
+            image = self._latest_artwork
         state_ok = not send_state or self._publish(self.config.state_topic, payload, "state") is not None
         art_ok = not send_art or self._publish(self.config.artwork_topic, image, "artwork") is not None
         with self._lock:
@@ -138,7 +140,7 @@ class MqttPresence:
             elif send_state: self._pending_state = True
             if art_ok and send_art: self._last_artwork = image; self._pending_artwork = False
             elif send_art: self._pending_artwork = True
-        return state_ok and art_ok and (send_state or send_art)
+        return state_ok and art_ok
 
     def update(self, state: PublicState, artwork: bytes | None = None) -> bool:
         payload = state.to_json(); image = artwork or b""

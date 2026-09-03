@@ -4,6 +4,9 @@
 
 ### Performance
 - Memoized resolved RetroArch content per live process so contentless playlist launches no longer re-scan bounded process memory on every poll; a running session now re-confirms only that its ROM still exists and reuses the cached core and ROM path until the process changes.
+- Skipped the full `/proc` walk while a game keeps running: the detector re-confirms only the current session's own process (one `exe` link and `stat` read) and falls back to a full scan only when that process changes, since candidate selection already keeps the current session whenever its process is present. State transitions and the idle debounce are unchanged.
+- Walked `/proc` with `os.scandir` and plain-string procfs paths instead of building a `Path` per entry, matched emulator `.dge` executables with string prefix checks instead of `Path.relative_to` exception flow, removed a dead per-process allocation and an unused compiled pattern, and cached the compiled ROM-path patterns per root set instead of recompiling them per scanned memory window.
+- Made the MQTT poll-time retry skip work and JSON serialization entirely when nothing is pending, so idle and steady play no longer re-serialize the state on every poll.
 
 ### Fixed
 - Updated the bootstrap installer regression test to match the current interactive `install.sh` (workspace path, `deploy/install.py` invocation, password handling) and added uninstall coverage; the suite no longer fails on a clean checkout.
