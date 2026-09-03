@@ -58,7 +58,7 @@ Coverage includes approved installed paths, root requirement, source JSON valida
 - Broker reconnection passed.
 - Broker-outage observation was inconclusive because the first SSH runner combined service and socket checks.
 - Battery operation and USB-online transition `0 -> 1` passed.
-- Wi-Fi outage/recovery remains the final manual network test.
+- Wi-Fi outage/recovery confirmed on device (0.7.0): the daemon reconnected once the outage cleared. A clean broker-outage observation remains the final manual network test.
 
 ### Resource evidence
 
@@ -180,12 +180,12 @@ The release process verifies:
 
 - [ ] Install/update succeeds on TF1 and retains configuration and credentials
 - [ ] Valid local artwork renders in Home Assistant
-- [ ] Missing artwork clears the previous retained image
+- [x] Missing artwork clears the previous retained image — confirmed on device (0.7.0): no stale image is held; with the handheld powered off the image entity reports Unavailable through the offline Last Will
 - [ ] Clean title appears for a representative fallback-only ROM
 - [ ] One short resource snapshot with representative artwork remains below the 40 MiB ceiling
 - [ ] Corrected supervision test
 - [ ] Corrected broker-outage observation
-- [ ] Manual Wi-Fi outage and recovery
+- [x] Manual Wi-Fi outage and recovery — confirmed on device (0.7.0): the daemon reconnected once the Wi-Fi outage cleared
 - [ ] Journald evidence
 
 No repeated one-hour validation is required for this revision unless the short artwork snapshot exposes continuing growth or a later runtime change invalidates prior evidence.

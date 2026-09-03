@@ -100,7 +100,7 @@
 - [x] P5-SVC-001 Approved deployment layout implemented
 - [x] P5-SVC-002 Protected configuration and password files implemented
 - [ ] P5-SVC-003 Ordinary reboot: verified after bounded recovery; clean zero-restart evidence remains open
-- [ ] P5-SVC-004 Wi-Fi and broker outage matrix: in progress
+- [ ] P5-SVC-004 Wi-Fi and broker outage matrix: Wi-Fi outage and recovery confirmed; broker-outage observation still pending
 - [ ] P5-SVC-005 Supervision: graceful restart verified; corrected unexpected-termination evidence pending
 - [ ] P5-SVC-006 Permanent invalid configuration rate-limit: unit directives reviewed (static review complete); device rate-limit observation pending
 - [ ] P5-PERF-001 Stable idle CPU device evidence pending
@@ -137,7 +137,7 @@
 - [ ] Corrected supervision observation
 - [ ] Corrected broker-outage observation
 - [ ] True same-core RetroArch switch in the consolidated matrix
-- [ ] Manual Wi-Fi outage and recovery
+- [x] Manual Wi-Fi outage and recovery — confirmed on device: the daemon reconnected after the Wi-Fi outage cleared
 - [ ] Journald evidence
 
 ### Version 0.6.8 title and artwork revision
@@ -157,7 +157,7 @@
 - [x] P5-CORR-050 Add a simple validated GitHub bootstrap installer while preserving the existing safe Python installer
 - [x] P5-CORR-051 Complete the Play Presence package, command, path, runtime, and service rename with migration from previous installation names
 - [ ] P5-HW-ART-001 Verify title and artwork on TF1 with a valid local image
-- [ ] P5-HW-ART-002 Verify missing artwork clears stale Home Assistant artwork
+- [x] P5-HW-ART-002 Verify missing artwork clears stale Home Assistant artwork — confirmed: no stale image retained; with the device powered off the image entity reports Unavailable via the offline Last Will
 - [ ] P5-HW-ART-003 Record one short RSS snapshot with representative artwork loaded
 
 **Phase 5 implementation status: Complete. Hardware status: Pending remaining device evidence.**

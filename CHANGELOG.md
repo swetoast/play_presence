@@ -26,6 +26,8 @@
 ### Validation
 - Added regression coverage for procfs candidate scanning, the current-process liveness reuse fast path, and per-process RetroArch content memoization.
 - Added a regression test asserting the systemd unit retains its full hardening and rate-limit directives.
+- Confirmed on device: missing artwork clears the previous retained image, and the image entity reports Unavailable through the offline Last Will when the handheld is powered off (P5-HW-ART-002).
+- Confirmed on device: the daemon reconnected after a Wi-Fi outage cleared (P5-SVC-004 Wi-Fi half; broker-outage observation still pending).
 - Verified the complete automated test suite, source compilation, reported version, and release archive integrity.
 
 ## 0.6.9 - 2026-09-02
