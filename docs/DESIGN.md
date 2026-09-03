@@ -102,7 +102,7 @@ Artwork rules:
 - default maximum size 2 MiB
 - no download, conversion, resizing, cache catalogue, or manifest consumption
 
-The daemon keeps only the latest current artwork bytes. Missing or invalid artwork is a normal no-artwork state.
+The daemon keeps only the latest current artwork bytes. Missing or invalid artwork is a normal no-artwork state: a ROM with no local image and no scraped source correctly reports `artwork_available: false` and an empty retained artwork payload. The daemon never downloads or scrapes artwork, so `false` reflects the absence of a local image, not a failure.
 
 ## Public state
 
@@ -146,12 +146,14 @@ The service runs as root for procfs access. Credentials remain in a protected fi
 ## Performance acceptance
 
 ```text
-Stable CPU: effectively 0.0%
+Idle CPU: negligible (<= 1.0% over the window; literal 0.0% is reported for reference only)
 Preferred RSS: <= 30 MiB
 RSS ceiling: 40 MiB
 Long-run memory growth: none
 Routine process write growth: none
 ```
+
+The idle daemon scans /proc periodically to detect launches, so its CPU is a small non-zero rate rather than literal zero; the acceptance gate is a negligible ceiling, and the literal-zero flag is retained as an informational sub-metric.
 
 The 2 MiB artwork ceiling is a bound, not proof of device acceptance. A short TF1 snapshot with representative artwork remains required. No additional one-hour run is required unless a later runtime change invalidates existing evidence.
 

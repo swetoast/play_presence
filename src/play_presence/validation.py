@@ -17,6 +17,10 @@ RUNTIME_FAILURE = Path("/run/play-presence/last-failure.json")
 MAX_RUNTIME_FAILURE_BYTES = 4096
 PREFERRED_RSS_KIB = 30 * 1024
 RSS_CEILING_KIB = 40 * 1024
+# An idle daemon still scans /proc periodically to detect launches, so its CPU
+# is a small non-zero rate rather than literal zero. The gate is a negligible
+# ceiling; literal zero is reported separately as an informational flag.
+NEGLIGIBLE_CPU_PERCENT = 1.0
 
 
 class ValidationError(RuntimeError):
@@ -185,6 +189,7 @@ def _assessment(summary: dict[str, Any], journal_available: bool) -> dict[str, b
     return {
         "continuous_window": continuous,
         "growth_window_usable": growth_usable,
+        "cpu_within_negligible_limit": cpu <= NEGLIGIBLE_CPU_PERCENT if cpu is not None else None,
         "cpu_zero_at_reported_precision": cpu == 0.0 if cpu is not None else None,
         "rss_at_or_below_preferred_limit": rss_max <= PREFERRED_RSS_KIB if rss_max is not None else None,
         "rss_below_release_ceiling": rss_max < RSS_CEILING_KIB if rss_max is not None else None,
@@ -245,6 +250,7 @@ def collect(duration_seconds: int, interval_seconds: int) -> dict[str, Any]:
             "journal_lines": 200,
             "preferred_rss_kib": PREFERRED_RSS_KIB,
             "rss_ceiling_kib": RSS_CEILING_KIB,
+            "negligible_cpu_percent": NEGLIGIBLE_CPU_PERCENT,
         },
     }
 

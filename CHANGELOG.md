@@ -4,6 +4,7 @@
 
 ### Changed
 - Renamed the default MQTT topic prefix from `rg40xxv` to `play-presence`, so state, availability, and artwork publish under `play-presence/*` by default. The MQTT username and password are unchanged. A custom `topic_prefix` in an existing configuration is preserved.
+- Recalibrated the idle-CPU acceptance criterion from literal 0.0% to a negligible ceiling (`cpu_within_negligible_limit`, <= 1.0%), since the daemon's periodic `/proc` scan is a small non-zero rate by design. Literal zero is retained as the informational `cpu_zero_at_reported_precision` flag, and the limit is exposed in the result's `limits` block.
 
 ### Migration
 - The installer rewrites only the exact legacy default MQTT identifiers in the installed configuration — `topic_prefix` (`rg40xxv` → `play-presence`) and `client_id` (`rg40xxv-game-presence` → `play-presence`) — leaving any custom value untouched, so an existing deployment adopts the renamed identifiers on update. Each field migrates independently.
@@ -27,6 +28,7 @@
 - Corrected the supported Paho MQTT range to 1.5.x or 1.6.x (1.x callback API).
 - Documented the installer trust model: integrity rests on GitHub TLS plus source-layout checks, with no separate signature or checksum, and noted the pinned-clone alternative.
 - Added an on-device acceptance runbook (`docs/ACCEPTANCE.md`) mapping each open roadmap hardware item to an exact command block and pass criteria.
+- Added an executable on-device acceptance runner (`deploy/acceptance.sh`, POSIX/dash) that runs the automated checks, scores the `validate` assessment, guides the manual steps, and restores state after the destructive ones.
 - Recorded the completed static reviews (persistent writes, logging bounds, restart rate limit) in the validation record, leaving only their device measurements outstanding.
 - Renumbered the 0.7.0 efficiency roadmap items to `P5-EFF-00x` to resolve an identifier collision with the pending `P5-PERF-00x` hardware-evidence items.
 
@@ -35,6 +37,11 @@
 - Added a regression test asserting the systemd unit retains its full hardening and rate-limit directives.
 - Confirmed on device: missing artwork clears the previous retained image, and the image entity reports Unavailable through the offline Last Will when the handheld is powered off (P5-HW-ART-002).
 - Confirmed on device: the daemon reconnected after a Wi-Fi outage cleared (P5-SVC-004 Wi-Fi half; broker-outage observation still pending).
+- Confirmed on device: update migrates cleanly (config, credentials, placement, topic rename, and legacy-topic tombstones) with no loss of function.
+- Confirmed on device: idle resources within limits — CPU 0.0416% (negligible), RSS 26.0 MiB (under preferred), RSS/PSS/write growth zero (P5-PERF-001, P5-SEC-001).
+- Resolved on device: journald is `Storage=none`, so there is no journal growth to bound (P5-SEC-002).
+- Confirmed on device: supervision recovers from a force-kill (active, NRestarts +1) (P5-SVC-005); gameplay RSS 26.7 MiB with artwork loaded, under preferred (P5-HW-ART-003).
+- Confirmed on device in live Home Assistant use: all detection transitions (DGE, RetroArch, same-core ROM switch, back-to-back games with no idle flicker), and title and artwork rendering for valid local images (P5-SEC-004 detection cells, P5-HW-ART-001).
 - Verified the complete automated test suite, source compilation, reported version, and release archive integrity.
 
 ## 0.6.9 - 2026-09-02

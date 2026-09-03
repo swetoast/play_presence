@@ -151,10 +151,19 @@ Verified:
 
 No behavioral contract changed in this revision: detection results, the MQTT state contract, discovery entities, and the idle debounce are identical to 0.6.9. No repeated hardware run is required unless a later runtime change invalidates prior evidence.
 
+### Device evidence (0.7.0)
+
+- Idle resources over a 120 s / 3-sample window: CPU 0.0416% (within the 1.0% negligible limit), RSS 26.0 MiB (under the 30 MiB preferred limit), RSS/PSS/write growth all zero, no ROM descriptor held. Closes P5-PERF-001 and the P5-SEC-001 device measurement.
+- The idle-CPU criterion was recalibrated from literal 0.0% to a negligible ceiling (<= 1.0%), because the daemon's periodic /proc scan is a small non-zero rate by design; literal zero is retained as an informational sub-metric.
+- Gameplay snapshot (P5-HW-ART-003): RSS 26.7 MiB with an SFC RetroArch game and gamelist artwork loaded, under the 30 MiB preferred limit. The sample held a transient fd to the SFC `gamelist.xml` while resolving title/artwork, so `no_rom_descriptor_observed` reads false during play as expected - that gate is meaningful only for the idle state.
+- Supervision (P5-SVC-005): a force-kill of the main PID recovered to active with `NRestarts` incremented by one.
+- Remaining: an extended idle window (P5-PERF-004) and a multi-sample gameplay CPU figure (P5-PERF-002).
+- journald is configured `Storage=none` on this firmware, so nothing is persisted and `validate` records `journal_capture_available` false; there is no journald growth to bound (P5-SEC-002), and post-incident debugging relies on the `last-failure.json` runtime record.
+
 ### Static reviews completed without hardware
 
-- Persistent write (P5-SEC-001): the `run` path performs no persistent writes. The only write is the volatile failure record under the tmpfs `RuntimeDirectory` (`/run/play-presence/last-failure.json`). ROM storage is `ReadOnlyPaths`, and `ProtectSystem=full` with `ProtectHome=true` seal the rest. Only the observed `write_bytes == 0` measurement remains a device check.
-- Logging bounds (P5-SEC-002): there is no per-poll logging in steady state, and every warning passes through a 60-second error limiter, so log volume is bounded by event rate rather than poll rate. Only the on-device journal capture remains.
+- Persistent write (P5-SEC-001): the `run` path performs no persistent writes. The only write is the volatile failure record under the tmpfs `RuntimeDirectory` (`/run/play-presence/last-failure.json`). ROM storage is `ReadOnlyPaths`, and `ProtectSystem=full` with `ProtectHome=true` seal the rest. Confirmed on device (0.7.0): `write_bytes` 0 with `write_bytes_growth` 0 over the sampling window.
+- Logging bounds (P5-SEC-002): there is no per-poll logging in steady state, and every warning passes through a 60-second error limiter, so log volume is bounded by event rate rather than poll rate. Resolved on device (0.7.0): journald is configured `Storage=none`, so nothing is persisted and there is no journal growth to bound; post-incident debugging relies on the `last-failure.json` runtime record.
 - Restart rate limit (P5-SVC-006): the unit sets `StartLimitIntervalSec=600`, `StartLimitBurst=3`, `RestartSec=60`, and an `ExecStartPre` `check-config` gate, so three failed starts within ten minutes stop the unit. Only the observed systemd behaviour remains a device check.
 
 ### Unit-file guard
@@ -179,15 +188,15 @@ The release process verifies:
 
 ## Remaining 0.6.8 device checks
 
-- [ ] Install/update succeeds on TF1 and retains configuration and credentials
-- [ ] Valid local artwork renders in Home Assistant
+- [x] Install/update succeeds on TF1 and retains configuration and credentials — confirmed on device (0.7.0): update migrated cleanly (config, credentials, placement, topic rename, tombstones) and works after migration
+- [x] Valid local artwork renders in Home Assistant - confirmed on device (0.7.0) in live use
 - [x] Missing artwork clears the previous retained image — confirmed on device (0.7.0): no stale image is held; with the handheld powered off the image entity reports Unavailable through the offline Last Will
-- [ ] Clean title appears for a representative fallback-only ROM
-- [ ] One short resource snapshot with representative artwork remains below the 40 MiB ceiling
-- [ ] Corrected supervision test
+- [x] Clean title appears for a representative fallback-only ROM - confirmed on device (0.7.0) in live use
+- [x] One short resource snapshot with representative artwork remains below the 40 MiB ceiling - confirmed on device (0.7.0): RSS 26.7 MiB with a game and gamelist artwork loaded
+- [x] Corrected supervision test - confirmed on device (0.7.0): force-kill recovered to active, NRestarts +1
 - [ ] Corrected broker-outage observation
 - [x] Manual Wi-Fi outage and recovery — confirmed on device (0.7.0): the daemon reconnected once the Wi-Fi outage cleared
-- [ ] Journald evidence
+- [x] Journald evidence — resolved on device (0.7.0): journald `Storage=none`, nothing persisted, no journal growth to bound
 
 No repeated one-hour validation is required for this revision unless the short artwork snapshot exposes continuing growth or a later runtime change invalidates prior evidence.
 

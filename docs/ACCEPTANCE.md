@@ -8,6 +8,12 @@ and tick the matching roadmap box when the pass criteria are met.
 The commands reuse the tooling the daemon already ships. Where an output file is
 written, its name carries the project version (currently `v0.7.0`).
 
+Most of this is automated by [`deploy/acceptance.sh`](../deploy/acceptance.sh),
+which runs the checks below, scores the `validate` assessment, guides the manual
+steps, and restores state after the destructive ones. Run `sh deploy/acceptance.sh help`
+on the device for the command list; `sh deploy/acceptance.sh all` runs the
+non-destructive automated set. The sections below document each step directly.
+
 ## 0. Preconditions
 
 ```sh

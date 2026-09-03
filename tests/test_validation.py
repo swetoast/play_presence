@@ -122,6 +122,7 @@ def test_assessment_applies_explicit_design_limits() -> None:
     assert result == {
         "continuous_window": True,
         "growth_window_usable": True,
+        "cpu_within_negligible_limit": True,
         "cpu_zero_at_reported_precision": True,
         "rss_at_or_below_preferred_limit": True,
         "rss_below_release_ceiling": True,
@@ -131,6 +132,41 @@ def test_assessment_applies_explicit_design_limits() -> None:
         "no_rom_descriptor_observed": True,
         "journal_capture_available": True,
     }
+
+
+def test_assessment_negligible_cpu_is_the_gate_not_literal_zero() -> None:
+    # A small non-zero idle CPU rate (periodic /proc scans) passes the gate
+    # while the literal-zero flag reports False for reference.
+    summary = {
+        "measurement_continuous": True,
+        "sample_count": 3,
+        "final_sample_complete": True,
+        "cpu_percent_over_window": 0.0416,
+        "rss_max_kib": 26616,
+        "rss_growth_kib": 0,
+        "pss_growth_kib": 0,
+        "write_bytes_growth": 0,
+        "rom_file_descriptor_observed": False,
+    }
+    result = validation._assessment(summary, journal_available=False)
+    assert result["cpu_within_negligible_limit"] is True
+    assert result["cpu_zero_at_reported_precision"] is False
+
+
+def test_assessment_flags_cpu_above_negligible_limit() -> None:
+    summary = {
+        "measurement_continuous": True,
+        "sample_count": 2,
+        "final_sample_complete": True,
+        "cpu_percent_over_window": 1.5,
+        "rss_max_kib": 26616,
+        "rss_growth_kib": 0,
+        "pss_growth_kib": 0,
+        "write_bytes_growth": 0,
+        "rom_file_descriptor_observed": False,
+    }
+    result = validation._assessment(summary, journal_available=True)
+    assert result["cpu_within_negligible_limit"] is False
 
 
 def test_assessment_uses_none_when_measurement_is_unavailable() -> None:
@@ -147,6 +183,7 @@ def test_assessment_uses_none_when_measurement_is_unavailable() -> None:
     }
     result = validation._assessment(summary, journal_available=False)
     assert result["growth_window_usable"] is False
+    assert result["cpu_within_negligible_limit"] is None
     assert result["cpu_zero_at_reported_precision"] is None
     assert result["rss_below_release_ceiling"] is None
     assert result["rss_growth_zero"] is None

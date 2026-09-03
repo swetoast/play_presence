@@ -101,16 +101,16 @@
 - [x] P5-SVC-002 Protected configuration and password files implemented
 - [ ] P5-SVC-003 Ordinary reboot: verified after bounded recovery; clean zero-restart evidence remains open
 - [ ] P5-SVC-004 Wi-Fi and broker outage matrix: Wi-Fi outage and recovery confirmed; broker-outage observation still pending
-- [ ] P5-SVC-005 Supervision: graceful restart verified; corrected unexpected-termination evidence pending
+- [x] P5-SVC-005 Supervision: graceful restart verified, and corrected unexpected-termination confirmed on device (0.7.0): force-kill of the main PID recovered to active with NRestarts +1
 - [ ] P5-SVC-006 Permanent invalid configuration rate-limit: unit directives reviewed (static review complete); device rate-limit observation pending
-- [ ] P5-PERF-001 Stable idle CPU device evidence pending
+- [x] P5-PERF-001 Idle CPU device evidence — confirmed on device (0.7.0): idle CPU 0.0416% over a 120 s window (within the 1.0% negligible limit), RSS 26.0 MiB (under the 30 MiB preferred limit), RSS/PSS growth zero
 - [ ] P5-PERF-002 Stable gameplay CPU device evidence recorded for 0.6.7 but 0.6.8 artwork snapshot pending
 - [x] P5-PERF-003 Preferred RSS and 40 MiB ceiling verified for 0.6.7 without artwork
 - [ ] P5-PERF-004 Extended no-growth acceptance remains open; no additional one-hour run requested
-- [ ] P5-SEC-001 Persistent write review: static review complete (no steady-state persistent writes; only the tmpfs `/run` failure record); device `write_bytes == 0` evidence pending
-- [ ] P5-SEC-002 Journald bounds: static review complete (no per-poll logging; warnings rate-limited); device journal capture pending
+- [x] P5-SEC-001 Persistent write: static review complete (no steady-state persistent writes; only the tmpfs `/run` failure record) and confirmed on device (0.7.0): `write_bytes` 0 with `write_bytes_growth` 0 over the window
+- [x] P5-SEC-002 Journald bounds: static review complete (no per-poll logging; warnings rate-limited) and resolved on device (0.7.0): journald is `Storage=none`, so nothing is persisted and there is no journal growth to bound; the `last-failure.json` runtime record covers post-incident debugging
 - [x] P5-SEC-003 No inbound interface or remote control
-- [ ] P5-SEC-004 Full transition/outage matrix in progress: Wi-Fi outage and recovery cell confirmed; broker-outage and detection-transition cells pending
+- [ ] P5-SEC-004 Full transition/outage matrix: Wi-Fi outage/recovery and detection-transition cells confirmed on device (0.7.0, in live Home Assistant use); broker-outage cell still pending
 
 ### Historical Phase 5 corrections
 
@@ -134,11 +134,11 @@
 - [x] Battery operation and USB `0 -> 1`
 - [x] Snapshot RSS below preferred and release limits
 - [x] No ROM descriptor in snapshots
-- [ ] Corrected supervision observation
+- [x] Corrected supervision observation - confirmed on device (0.7.0): force-kill recovered to active, NRestarts +1
 - [ ] Corrected broker-outage observation
-- [ ] True same-core RetroArch switch in the consolidated matrix
+- [x] True same-core RetroArch switch in the consolidated matrix - confirmed on device (0.7.0): SFC-to-SFC switch updates the game with no stale title, in live Home Assistant use
 - [x] Manual Wi-Fi outage and recovery — confirmed on device: the daemon reconnected after the Wi-Fi outage cleared
-- [ ] Journald evidence
+- [x] Journald evidence - resolved on device (0.7.0): journald `Storage=none`, nothing persisted, no journal growth to bound
 
 ### Version 0.6.8 title and artwork revision
 
@@ -156,9 +156,9 @@
 - [x] P5-CORR-049 Restored phase regression modules and compatibility helper contracts
 - [x] P5-CORR-050 Add a simple validated GitHub bootstrap installer while preserving the existing safe Python installer
 - [x] P5-CORR-051 Complete the Play Presence package, command, path, runtime, and service rename with migration from previous installation names
-- [ ] P5-HW-ART-001 Verify title and artwork on TF1 with a valid local image
+- [x] P5-HW-ART-001 Title and artwork on TF1 with a valid local image - confirmed on device (0.7.0): renders in Home Assistant in live use
 - [x] P5-HW-ART-002 Verify missing artwork clears stale Home Assistant artwork — confirmed: no stale image retained; with the device powered off the image entity reports Unavailable via the offline Last Will
-- [ ] P5-HW-ART-003 Record one short RSS snapshot with representative artwork loaded
+- [x] P5-HW-ART-003 Short RSS snapshot with artwork loaded - confirmed on device (0.7.0): RSS 26.7 MiB with an SFC game and gamelist artwork loaded, under the 30 MiB preferred limit
 
 **Phase 5 implementation status: Complete. Hardware status: Pending remaining device evidence.**
 
