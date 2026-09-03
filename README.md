@@ -8,7 +8,7 @@ Verified Models:
 
 * RG40XX V
 
-Current release: **0.6.9**.
+Current release: **0.7.0**.
 
 ## Highlights
 

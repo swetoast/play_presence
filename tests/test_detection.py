@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
@@ -16,7 +17,9 @@ from play_presence.detection import (
     normalize_process,
     parse_start_ticks,
     read_power_mode,
+    scan_candidates,
     select_candidate,
+    session_still_active,
 )
 
 
@@ -217,3 +220,80 @@ def test_playlist_retroarch_memory_detection_fails_closed_without_core_pair(tmp_
     config = DetectionConfig(rom_roots=(rom_root,))
     record = ProcessRecord(10, str(config.retroarch_executable), (str(config.retroarch_executable), "-c", "/.config/retroarch/retroarch.cfg"), 100)
     assert normalize_process(record, config, proc) is None
+
+
+def _make_proc(base: Path, pid: int, executable: str, argv: tuple[str, ...], start_ticks: int) -> None:
+    directory = base / str(pid)
+    directory.mkdir(parents=True)
+    os.symlink(executable, directory / "exe")
+    (directory / "cmdline").write_bytes(b"\0".join(os.fsencode(part) for part in argv) + b"\0")
+    (directory / "stat").write_bytes(
+        f"{pid} ({Path(executable).name}) S ".encode()
+        + b" ".join([b"0"] * 18 + [str(start_ticks).encode()] + [b"0"] * 4)
+    )
+
+
+def test_scan_candidates_finds_game_via_procfs(tmp_path: Path) -> None:
+    proc = tmp_path / "proc"
+    proc.mkdir()
+    (proc / "not-a-pid").mkdir()  # non-numeric entry must be ignored
+    rom_root = tmp_path / "Roms"
+    (rom_root / "GBA").mkdir(parents=True)
+    rom = rom_root / "GBA" / "Game.gba.zip"
+    rom.write_bytes(b"x")
+    _make_proc(proc, 77, "/mnt/vendor/bin/game/gba/gba_emu.dge", ("./gba_emu.dge", str(rom)), 4242)
+    config = DetectionConfig(rom_roots=(rom_root,))
+    candidates = scan_candidates(config, proc)
+    assert [(c.pid, c.rom_file, c.emulator) for c in candidates] == [
+        (77, "Game.gba.zip", "Game Boy Advance Emulator")
+    ]
+
+
+def test_session_still_active_tracks_the_exact_process_instance(tmp_path: Path) -> None:
+    proc = tmp_path / "proc"
+    proc.mkdir()
+    executable = "/mnt/vendor/bin/game/gba/gba_emu.dge"
+    _make_proc(proc, 77, executable, ("./gba_emu.dge",), 4242)
+    current = candidate(77, 4242, "/mnt/mmc/Roms/GBA/Game.zip")
+    current = SessionCandidate(77, 4242, executable, current.rom_path, current.rom_root,
+                               "GBA", "gba", "Game Boy Advance", "gba", None, "Game.zip", None)
+    retro = DetectionConfig().retroarch_executable
+    assert session_still_active(current, retro, proc) is True
+    # Different start ticks means a reused pid, not the same instance.
+    assert session_still_active(replace(current, process_start_ticks=1), retro, proc) is False
+    # Different executable is a different process behind the same pid.
+    assert session_still_active(replace(current, executable="/mnt/vendor/bin/game/gba/other.dge"), retro, proc) is False
+    # A vanished process fails closed.
+    assert session_still_active(candidate(999, 1, "/mnt/mmc/Roms/GBA/Game.zip"), retro, proc) is False
+
+
+def test_retroarch_content_cache_reuses_resolution_without_rescanning(tmp_path: Path) -> None:
+    from play_presence import detection
+    proc = tmp_path / "proc"
+    base = proc / "10"
+    base.mkdir(parents=True)
+    rom_root = tmp_path / "Roms"
+    system = rom_root / "MAME"
+    system.mkdir(parents=True)
+    active = system / "ffight2b.zip"
+    active.write_bytes(b"active")
+    core = "/mnt/vendor/deep/retro/cores/mame2010_libretro.so"
+    start = 0x1000
+    payload = core.encode() + b"\0" + str(active).encode() + b"\0"
+    with (base / "mem").open("wb") as handle:
+        handle.seek(start)
+        handle.write(payload)
+    (base / "maps").write_text(
+        f"{start:x}-{start + 0x4000:x} rw-p 00000000 00:00 0 [heap]\n"
+        "7000-8000 r-xp 00000000 00:00 0 " + core + "\n",
+        encoding="ascii",
+    )
+    config = DetectionConfig(rom_roots=(rom_root,))
+    record = ProcessRecord(10, str(config.retroarch_executable),
+                           (str(config.retroarch_executable), "-c", "/r.cfg"), 100)
+    first = detection.normalize_process(record, config, proc)
+    assert first is not None and first.rom_path == str(active) and first.core == "mame2010"
+    # Blank the memory: a rescan would now fail, so an identical result proves the cache served it.
+    (base / "mem").write_bytes(b"")
+    second = detection.normalize_process(record, config, proc)
+    assert second is not None and second.rom_path == str(active) and second.core == "mame2010"

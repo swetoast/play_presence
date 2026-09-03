@@ -2,7 +2,7 @@
 
 ## Project
 
-- Version: 0.6.8
+- Version: 0.7.0
 - Target: Anbernic RG40XX V
 - Firmware: TF1 stock firmware
 - Status: Phase 5 implementation complete; remaining hardware acceptance pending
@@ -13,7 +13,7 @@ The accepted TF1 baseline includes writable persistent system locations, custom 
 
 ## Phase 1 automated validation
 
-Coverage includes strict configuration, secret-safe errors, stat field 22, malformed procfs, null-separated command lines, non-UTF-8 bytes, RetroArch and DGE detection, XMAME, helper exclusion, safe unknown-layout rejection, stable candidate selection, procfs races, power parsing, polling intervals, immediate transitions, confirmed idle, pending-idle cancellation, timestamp refresh, and initial idle emission.
+Coverage includes strict configuration, secret-safe errors, stat field 22, malformed procfs, null-separated command lines, non-UTF-8 bytes, RetroArch and DGE detection, XMAME, helper exclusion, safe unknown-layout rejection, stable candidate selection, procfs candidate scanning, current-process liveness reuse, per-process RetroArch content memoization, procfs races, power parsing, polling intervals, immediate transitions, confirmed idle, pending-idle cancellation, timestamp refresh, and initial idle emission.
 
 ## Phase 2 automated validation
 
@@ -134,11 +134,27 @@ The package includes and runs regression modules for:
 
 The compatibility audit restored the original two-value `metadata_location()` contract and retained all verified aliases.
 
+## Version 0.7.0 automated validation
+
+### Efficiency and audit revision
+
+Verified:
+
+- procfs candidate scanning locates a live game session and ignores non-numeric entries
+- the current-process liveness check matches the exact process instance and fails closed on a reused pid, a changed executable, or a vanished process
+- per-process RetroArch content memoization reuses the resolved core and ROM path without re-scanning process memory
+- the interactive bootstrap installer regression suite, including uninstall support and an executable script
+- the MQTT reconnect and poll-time retry contract is preserved with pending-only serialization
+- the aligned default `client_id`
+- all prior phase regressions
+
+No behavioral contract changed in this revision: detection results, the MQTT state contract, discovery entities, and the idle debounce are identical to 0.6.9. No repeated hardware run is required unless a later runtime change invalidates prior evidence.
+
 ## Packaging validation
 
 The release process verifies:
 
-- version reports `0.6.8`
+- version reports `0.7.0`
 - source and tests compile
 - test suite passes from a clean extraction
 - ZIP integrity passes
@@ -165,4 +181,4 @@ No repeated one-hour validation is required for this revision unless the short a
 
 ## GitHub bootstrap validation
 
-Automated checks verify shell syntax, root refusal, dependency checks, temporary workspace cleanup, repository archive URL construction, required-file validation, argument forwarding to the Python installer, and preservation of compatibility-sensitive identifiers. Network download and first-install behavior remain device checks after the repository is populated.
+Automated checks verify shell syntax, an executable bootstrap script, the expected repository archive URL construction, the volatile temporary workspace, cleanup on exit, required-file validation, hidden password entry, invocation of the Python installer with the generated configuration and password file, uninstall support, and preservation of compatibility-sensitive identifiers. Network download and first-install behavior remain device checks after the repository is populated.

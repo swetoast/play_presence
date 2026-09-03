@@ -48,7 +48,7 @@ Supported launch paths:
 - RetroArch command-line content
 - contentless TF1 RetroArch playlist sessions where an exact mapped core and real ROM path occur in the same writable-private memory window
 
-The detector preserves bounded fallback scanning and caches only the last successful memory region for the current RetroArch process identity.
+The detector preserves bounded fallback scanning. It caches the resolved core and ROM path, together with the last successful memory region, for the current RetroArch process identity, so a contentless playlist session is resolved once per process rather than re-scanned on every poll. While a game keeps running, the detector re-confirms only the current session's own process by reading its `exe` link and `stat` line, and performs a full `/proc` scan only when that process changes; this is behaviourally identical to a full scan because candidate selection already keeps the current session whenever its process is still present.
 
 ## State transitions
 

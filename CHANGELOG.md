@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.7.0 - 2026-09-03
 
 ### Performance
 - Memoized resolved RetroArch content per live process so contentless playlist launches no longer re-scan bounded process memory on every poll; a running session now re-confirms only that its ROM still exists and reuses the cached core and ROM path until the process changes.
@@ -19,6 +19,10 @@
 ### Documentation
 - Corrected the supported Paho MQTT range to 1.5.x or 1.6.x (1.x callback API).
 - Documented the installer trust model: integrity rests on GitHub TLS plus source-layout checks, with no separate signature or checksum, and noted the pinned-clone alternative.
+
+### Validation
+- Added regression coverage for procfs candidate scanning, the current-process liveness reuse fast path, and per-process RetroArch content memoization.
+- Verified the complete automated test suite, source compilation, reported version, and release archive integrity.
 
 ## 0.6.9 - 2026-09-02
 

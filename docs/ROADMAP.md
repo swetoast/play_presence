@@ -162,6 +162,19 @@
 
 **Phase 5 implementation status: Complete. Hardware status: Pending remaining device evidence.**
 
+### Version 0.7.0 efficiency and audit revision
+
+- [x] P5-PERF-001 Memoize resolved RetroArch content per process to avoid repeated memory scans while playing
+- [x] P5-PERF-002 Confirm the current session by its own process instead of a full `/proc` walk while a game runs
+- [x] P5-PERF-003 Scan `/proc` with `os.scandir`, string procfs paths, and string `.dge` matching; cache compiled ROM-path patterns
+- [x] P5-PERF-004 Skip MQTT state serialization on polls with nothing pending
+- [x] P5-CORR-052 Repair the bootstrap installer regression suite and mark the script executable
+- [x] P5-CORR-053 Derive probe and validation output filenames from the project version
+- [x] P5-CORR-054 Align the default MQTT client identifier and correct installer branding
+- [x] P5-CORR-055 Lock latest-state access in the MQTT reconnect path
+- [x] P5-CORR-056 Correct the documented Paho range and document the installer trust model
+- [x] P5-CORR-057 Add regression coverage for procfs scanning, liveness reuse, and content memoization
+
 ## Release gate
 
 - [ ] Every applicable roadmap item Verified or justified Not applicable
