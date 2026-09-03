@@ -105,3 +105,35 @@ def test_failed_update_restores_systemd_state(tmp_path: Path, monkeypatch: pytes
     assert ["systemctl", "daemon-reload"] in commands
     assert ["systemctl", "enable", unit.name] in commands
     assert ["systemctl", "restart", unit.name] in commands
+
+
+def test_service_unit_carries_full_hardening_and_rate_limit() -> None:
+    """Guard the systemd unit so a future edit cannot silently drop hardening.
+
+    These directives back the P5-SEC and P5-SVC roadmap items: no new
+    privileges, a private /tmp, read-only system and home, read-only ROM
+    storage, a tmpfs runtime directory, a bounded restart policy, and a
+    restricted socket family set.
+    """
+    unit = (ROOT / "deploy/play-presence.service").read_text(encoding="utf-8")
+    required = [
+        "NoNewPrivileges=true",
+        "PrivateTmp=true",
+        "ProtectHome=true",
+        "ProtectSystem=full",
+        "ReadOnlyPaths=/opt/play-presence /mnt/mmc/Roms",
+        "RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6",
+        "UMask=0077",
+        "RuntimeDirectory=play-presence",
+        "RuntimeDirectoryMode=0700",
+        "KillSignal=SIGTERM",
+        "TimeoutStopSec=20",
+        "Restart=on-failure",
+        "RestartSec=60",
+        "StartLimitIntervalSec=600",
+        "StartLimitBurst=3",
+        "User=root",
+        "Group=root",
+    ]
+    missing = [directive for directive in required if directive not in unit]
+    assert not missing, f"service unit is missing hardening directives: {missing}"

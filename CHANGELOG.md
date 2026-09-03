@@ -19,9 +19,13 @@
 ### Documentation
 - Corrected the supported Paho MQTT range to 1.5.x or 1.6.x (1.x callback API).
 - Documented the installer trust model: integrity rests on GitHub TLS plus source-layout checks, with no separate signature or checksum, and noted the pinned-clone alternative.
+- Added an on-device acceptance runbook (`docs/ACCEPTANCE.md`) mapping each open roadmap hardware item to an exact command block and pass criteria.
+- Recorded the completed static reviews (persistent writes, logging bounds, restart rate limit) in the validation record, leaving only their device measurements outstanding.
+- Renumbered the 0.7.0 efficiency roadmap items to `P5-EFF-00x` to resolve an identifier collision with the pending `P5-PERF-00x` hardware-evidence items.
 
 ### Validation
 - Added regression coverage for procfs candidate scanning, the current-process liveness reuse fast path, and per-process RetroArch content memoization.
+- Added a regression test asserting the systemd unit retains its full hardening and rate-limit directives.
 - Verified the complete automated test suite, source compilation, reported version, and release archive integrity.
 
 ## 0.6.9 - 2026-09-02

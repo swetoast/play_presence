@@ -150,6 +150,18 @@ Verified:
 
 No behavioral contract changed in this revision: detection results, the MQTT state contract, discovery entities, and the idle debounce are identical to 0.6.9. No repeated hardware run is required unless a later runtime change invalidates prior evidence.
 
+### Static reviews completed without hardware
+
+- Persistent write (P5-SEC-001): the `run` path performs no persistent writes. The only write is the volatile failure record under the tmpfs `RuntimeDirectory` (`/run/play-presence/last-failure.json`). ROM storage is `ReadOnlyPaths`, and `ProtectSystem=full` with `ProtectHome=true` seal the rest. Only the observed `write_bytes == 0` measurement remains a device check.
+- Logging bounds (P5-SEC-002): there is no per-poll logging in steady state, and every warning passes through a 60-second error limiter, so log volume is bounded by event rate rather than poll rate. Only the on-device journal capture remains.
+- Restart rate limit (P5-SVC-006): the unit sets `StartLimitIntervalSec=600`, `StartLimitBurst=3`, `RestartSec=60`, and an `ExecStartPre` `check-config` gate, so three failed starts within ten minutes stop the unit. Only the observed systemd behaviour remains a device check.
+
+### Unit-file guard
+
+A regression test asserts the systemd unit retains its full hardening and rate-limit directives (`NoNewPrivileges`, `PrivateTmp`, `ProtectHome`, `ProtectSystem=full`, read-only ROM path, restricted address families, `UMask`, runtime directory and mode, kill signal, stop timeout, restart policy, and start-limit) so a future edit cannot silently drop them.
+
+The remaining device acceptance steps are collected in [`ACCEPTANCE.md`](ACCEPTANCE.md), one command block per open roadmap item with its pass criteria.
+
 ## Packaging validation
 
 The release process verifies:

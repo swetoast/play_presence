@@ -283,6 +283,7 @@ Further project information:
 - [`docs/DESIGN.md`](docs/DESIGN.md)
 - [`docs/ROADMAP.md`](docs/ROADMAP.md)
 - [`docs/VALIDATION.md`](docs/VALIDATION.md)
+- [`docs/ACCEPTANCE.md`](docs/ACCEPTANCE.md)
 
 ## Contributing
 

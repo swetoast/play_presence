@@ -102,13 +102,13 @@
 - [ ] P5-SVC-003 Ordinary reboot: verified after bounded recovery; clean zero-restart evidence remains open
 - [ ] P5-SVC-004 Wi-Fi and broker outage matrix: in progress
 - [ ] P5-SVC-005 Supervision: graceful restart verified; corrected unexpected-termination evidence pending
-- [ ] P5-SVC-006 Permanent invalid configuration rate-limit evidence pending
+- [ ] P5-SVC-006 Permanent invalid configuration rate-limit: unit directives reviewed (static review complete); device rate-limit observation pending
 - [ ] P5-PERF-001 Stable idle CPU device evidence pending
 - [ ] P5-PERF-002 Stable gameplay CPU device evidence recorded for 0.6.7 but 0.6.8 artwork snapshot pending
 - [x] P5-PERF-003 Preferred RSS and 40 MiB ceiling verified for 0.6.7 without artwork
 - [ ] P5-PERF-004 Extended no-growth acceptance remains open; no additional one-hour run requested
-- [ ] P5-SEC-001 Persistent write review incomplete
-- [ ] P5-SEC-002 Journald bounds incomplete
+- [ ] P5-SEC-001 Persistent write review: static review complete (no steady-state persistent writes; only the tmpfs `/run` failure record); device `write_bytes == 0` evidence pending
+- [ ] P5-SEC-002 Journald bounds: static review complete (no per-poll logging; warnings rate-limited); device journal capture pending
 - [x] P5-SEC-003 No inbound interface or remote control
 - [ ] P5-SEC-004 Full transition/outage matrix in progress
 
@@ -164,10 +164,10 @@
 
 ### Version 0.7.0 efficiency and audit revision
 
-- [x] P5-PERF-001 Memoize resolved RetroArch content per process to avoid repeated memory scans while playing
-- [x] P5-PERF-002 Confirm the current session by its own process instead of a full `/proc` walk while a game runs
-- [x] P5-PERF-003 Scan `/proc` with `os.scandir`, string procfs paths, and string `.dge` matching; cache compiled ROM-path patterns
-- [x] P5-PERF-004 Skip MQTT state serialization on polls with nothing pending
+- [x] P5-EFF-001 Memoize resolved RetroArch content per process to avoid repeated memory scans while playing
+- [x] P5-EFF-002 Confirm the current session by its own process instead of a full `/proc` walk while a game runs
+- [x] P5-EFF-003 Scan `/proc` with `os.scandir`, string procfs paths, and string `.dge` matching; cache compiled ROM-path patterns
+- [x] P5-EFF-004 Skip MQTT state serialization on polls with nothing pending
 - [x] P5-CORR-052 Repair the bootstrap installer regression suite and mark the script executable
 - [x] P5-CORR-053 Derive probe and validation output filenames from the project version
 - [x] P5-CORR-054 Align the default MQTT client identifier and correct installer branding
